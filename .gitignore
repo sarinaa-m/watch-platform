@@ -1,0 +1,11 @@
+node_modules
+build
+dist
+.DS_Store
+*.local
+.env
+.env.local
+.env.*.local
+coverage
+*.log
+.claude/

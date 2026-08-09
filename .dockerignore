@@ -1,0 +1,15 @@
+node_modules
+build
+dist
+.git
+.gitignore
+*.md
+.env.local
+.env.*.local
+.vscode
+.idea
+*.log
+npm-debug.log*
+.DS_Store
+coverage
+.husky
