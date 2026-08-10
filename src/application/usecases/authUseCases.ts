@@ -1,8 +1,11 @@
 import type { Session } from '@domain/entities/session';
 import { authorityRepository } from '@infra/adapters/authRepositoryImpl';
+import { useMutation } from '@tanstack/vue-query';
 
-export const useAuth = () => {
-  return;
+export const useRequestOtp = () => {
+  return useMutation({
+    mutationFn: (identifier: string) => authorityRepository.requestOtp(identifier),
+  });
 };
 
 export async function requestOtpUseCase(identifier: string): Promise<void> {

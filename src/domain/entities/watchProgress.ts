@@ -5,3 +5,7 @@ export interface WatchProgress {
   updated_at: string;
   completed: boolean;
 }
+
+export interface ContinueWatchingResponse {
+  data: WatchProgress[];
+}

@@ -1,21 +1,19 @@
 import { httpClient } from '@infra/api/httpClient';
-import type { WatchProgress } from '@domain/entities/watchProgress';
-import type { ContinueWatchingResponse } from '@domain/ports/out/WatchProgressRepository';
+import type { ContinueWatchingResponse, WatchProgress } from '@domain/entities';
+import type { WatchProgressRepository, UpdateWatchingDTO } from '@domain/ports';
 
-// GET /continue-watching - always returns exactly one item for the user
-export function getContinueWatching(token: string): Promise<ContinueWatchingResponse> {
-  return httpClient.get<ContinueWatchingResponse>('/continue-watching', { token });
-}
+export const createWatchProgressRepository = (): WatchProgressRepository => ({
+  async getContinueWatching(token: string): Promise<ContinueWatchingResponse> {
+    return httpClient.get<ContinueWatchingResponse>('/continue-watching', { token });
+  },
+  async updateWatchProgress(dto: UpdateWatchingDTO): Promise<WatchProgress> {
+    const { positionSeconds, token, videoId } = dto;
+    return httpClient.put<WatchProgress>(
+      '/watch-progress',
+      { video_id: videoId, position_seconds: positionSeconds },
+      { token }
+    );
+  },
+});
 
-// PUT /watch-progress - call periodically, on pause, and on page leave
-export function updateWatchProgress(
-  token: string,
-  videoId: number,
-  positionSeconds: number
-): Promise<WatchProgress> {
-  return httpClient.put<WatchProgress>(
-    '/watch-progress',
-    { video_id: videoId, position_seconds: positionSeconds },
-    { token }
-  );
-}
+export const watchProgressRepository = createWatchProgressRepository();

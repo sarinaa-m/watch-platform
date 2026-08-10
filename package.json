@@ -17,10 +17,12 @@
     "prepare": "husky"
   },
   "dependencies": {
-    "vue": "^3.4.21",
-    "vue-router": "^4.3.0",
+    "@tanstack/vue-query": "^5.101.4",
+    "core-js": "^3.50.0",
+    "hls.js": "^1.5.7",
     "pinia": "^2.1.7",
-    "hls.js": "^1.5.7"
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",

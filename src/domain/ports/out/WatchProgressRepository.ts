@@ -1,14 +1,7 @@
-import type { WatchProgress } from '@domain/entities/watchProgress';
-
-export interface ContinueWatchingResponse {
-  data: WatchProgress[];
-}
+import type { ContinueWatchingResponse, WatchProgress } from '@domain/entities';
+import type { UpdateWatchingDTO } from '../dto';
 
 export interface WatchProgressRepository {
   getContinueWatching(token: string): Promise<ContinueWatchingResponse>;
-  updateWatchProgress(
-    token: string,
-    videoId: number,
-    positionSeconds: number
-  ): Promise<WatchProgress>;
+  updateWatchProgress(dto: UpdateWatchingDTO): Promise<WatchProgress>;
 }
