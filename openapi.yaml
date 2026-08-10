@@ -1,0 +1,470 @@
+openapi: 3.0.3
+info:
+  title: Arvan Challenge API
+  description: >-
+    Stateless JWT authentication, movie/video catalog, and continue-watching
+    API for ArvanCloud Edge Computing.
+  version: 1.0.0
+  contact:
+    name: Arvan Challenge
+  license:
+    name: ""
+    url: ""
+servers:
+  - url: https://YOUR_EDGE_DOMAIN
+    description: ArvanCloud Edge Computing deployment
+tags:
+  - name: Health
+    description: Service health checks.
+  - name: Movies
+    description: Public movie and video catalog.
+  - name: Authentication
+    description: Fixed OTP and JWT authentication.
+  - name: Watch Progress
+    description: Authenticated playback progress management.
+
+paths:
+  /health:
+    get:
+      tags: [Health]
+      summary: Check API health
+      operationId: getHealth
+      security: []
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+              example:
+                status: ok
+        "404":
+          $ref: "#/components/responses/RouteNotFound"
+
+  /movies:
+    get:
+      tags: [Movies]
+      summary: Get all movies/videos
+      description: Public endpoint returning the 15 configured ArvanCloud event videos.
+      operationId: getMovies
+      security: []
+      responses:
+        "200":
+          description: Movie list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MovieListResponse"
+        "404":
+          $ref: "#/components/responses/RouteNotFound"
+
+  /movies/{id}:
+    get:
+      tags: [Movies]
+      summary: Get one movie/video
+      operationId: getMovieById
+      security: []
+      parameters:
+        - $ref: "#/components/parameters/MovieId"
+      responses:
+        "200":
+          description: Movie/video details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Movie"
+        "404":
+          $ref: "#/components/responses/MovieNotFound"
+
+  /auth/request-otp:
+    post:
+      tags: [Authentication]
+      summary: Request an OTP
+      description: >-
+        Interview challenge behavior: the returned OTP is always 000000.
+        This endpoint does not send a real SMS or email.
+      operationId: requestOtp
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RequestOtpRequest"
+            example:
+              identifier: candidate@example.com
+      responses:
+        "200":
+          description: Fixed challenge OTP generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RequestOtpResponse"
+              example:
+                message: OTP generated
+                identifier: candidate@example.com
+                otp: "000000"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+
+  /auth/verify-otp:
+    post:
+      tags: [Authentication]
+      summary: Verify OTP and issue an access token
+      description: Issues a one-hour JWT access token. No refresh token is used.
+      operationId: verifyOtp
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VerifyOtpRequest"
+            example:
+              identifier: candidate@example.com
+              otp: "000000"
+      responses:
+        "200":
+          description: JWT access token issued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TokenResponse"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          description: Invalid OTP
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: invalid_otp
+                message: OTP is invalid
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+
+  /auth/me:
+    get:
+      tags: [Authentication]
+      summary: Get the authenticated user
+      operationId: getCurrentUser
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Authenticated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CurrentUserResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /continue-watching:
+    get:
+      tags: [Watch Progress]
+      summary: Get the user's continue-watching item
+      description: >-
+        Returns exactly one item for every authenticated user. A new user starts
+        at video 1 and position 10 seconds.
+      operationId: getContinueWatching
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: User watch progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContinueWatchingResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /watch-progress:
+    put:
+      tags: [Watch Progress]
+      summary: Update the user's playback progress
+      description: >-
+        Send periodically while watching, and also when the player is paused or
+        the user leaves the page. Progress is stored in memory per user.
+      operationId: updateWatchProgress
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WatchProgressRequest"
+            example:
+              video_id: 2
+              position_seconds: 125
+      responses:
+        "200":
+          description: Updated playback progress
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchProgress"
+        "400":
+          $ref: "#/components/responses/ValidationError"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/MovieNotFound"
+        "415":
+          $ref: "#/components/responses/UnsupportedMediaType"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT returned by POST /auth/verify-otp.
+
+  parameters:
+    MovieId:
+      name: id
+      in: path
+      required: true
+      description: Numeric movie/video ID.
+      schema:
+        type: integer
+        minimum: 1
+        example: 1
+
+  responses:
+    Unauthorized:
+      description: Missing, invalid, or expired JWT
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: unauthorized
+            message: Bearer token is required
+    ValidationError:
+      description: Invalid request body
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: validation_error
+            message: Invalid request data
+    UnsupportedMediaType:
+      description: Content-Type must be application/json
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: unsupported_media_type
+            message: Content-Type must be application/json
+    MovieNotFound:
+      description: Movie/video does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: not_found
+            message: Movie not found
+    RouteNotFound:
+      description: Route does not exist
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+          example:
+            error: not_found
+            message: Route not found
+
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          example: ok
+
+    Movie:
+      type: object
+      required: [id, title, description, cover_image, video_url]
+      properties:
+        id:
+          type: integer
+          minimum: 1
+          example: 1
+        title:
+          type: string
+          example: Ride the Clouds 1400
+        description:
+          type: string
+          example: Highlights from ArvanCloud's Ride the Clouds 1400 event at Espinas Palace in Tehran.
+        cover_image:
+          type: string
+          format: uri
+          example: https://dm.arvanvod.ir/mpLZXLZ963/nRdERJEW81/thumbnail.png
+        video_url:
+          type: string
+          format: uri
+          description: HLS master playlist URL.
+          example: https://dm.arvanvod.ir/mpLZXLZ963/nRdERJEW81/master.m3u8
+
+    MovieListResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          minItems: 15
+          maxItems: 15
+          items:
+            $ref: "#/components/schemas/Movie"
+        total:
+          type: integer
+          example: 15
+
+    RequestOtpRequest:
+      type: object
+      required: [identifier]
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+          minLength: 3
+          maxLength: 254
+          example: candidate@example.com
+
+    RequestOtpResponse:
+      type: object
+      required: [message, identifier, otp]
+      properties:
+        message:
+          type: string
+          example: OTP generated
+        identifier:
+          type: string
+          example: candidate@example.com
+        otp:
+          type: string
+          pattern: '^\d{6}$'
+          example: "000000"
+
+    VerifyOtpRequest:
+      type: object
+      required: [identifier, otp]
+      additionalProperties: false
+      properties:
+        identifier:
+          type: string
+          minLength: 3
+          maxLength: 254
+          example: candidate@example.com
+        otp:
+          type: string
+          pattern: '^\d{6}$'
+          example: "000000"
+
+    TokenResponse:
+      type: object
+      required: [access_token, token_type, expires_in]
+      properties:
+        access_token:
+          type: string
+          description: HS256 JWT access token.
+        token_type:
+          type: string
+          enum: [Bearer]
+          example: Bearer
+        expires_in:
+          type: integer
+          description: Token lifetime in seconds.
+          example: 3600
+
+    CurrentUserResponse:
+      type: object
+      required: [identifier]
+      properties:
+        identifier:
+          type: string
+          example: candidate@example.com
+
+    ContinueWatchingResponse:
+      type: object
+      required: [data, total]
+      properties:
+        data:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            $ref: "#/components/schemas/WatchProgress"
+        total:
+          type: integer
+          minimum: 0
+          maximum: 1
+          example: 1
+
+    WatchProgressRequest:
+      type: object
+      required: [video_id, position_seconds]
+      additionalProperties: false
+      properties:
+        video_id:
+          type: integer
+          minimum: 1
+          example: 2
+        position_seconds:
+          type: number
+          format: double
+          minimum: 0
+          example: 125
+
+    WatchProgress:
+      type: object
+      required:
+        [video_id, position_seconds, progress_percentage, updated_at, completed]
+      properties:
+        video_id:
+          type: integer
+          minimum: 1
+          example: 2
+        position_seconds:
+          type: number
+          format: double
+          minimum: 0
+          example: 125
+        progress_percentage:
+          type: number
+          format: double
+          minimum: 0
+          maximum: 100
+          example: 3.47
+        updated_at:
+          type: string
+          format: date-time
+          description: UTC timestamp of the latest progress update.
+          example: "2026-08-08T11:30:00.000Z"
+        completed:
+          type: boolean
+          description: True when 10 minutes or less remain in the mock video.
+          example: false
+
+    ErrorResponse:
+      type: object
+      required: [error, message]
+      properties:
+        error:
+          type: string
+          example: validation_error
+        message:
+          type: string
+          example: Invalid request data

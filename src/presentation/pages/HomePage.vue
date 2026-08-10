@@ -6,7 +6,8 @@ import { useWatchStore } from '@infra/storage/watchStore';
 import type { Movie } from '@domain/entities/movie';
 import type { ApiError } from '@infra/api/httpClient';
 import VideoCard from '@presentation/components/VideoCard.vue';
-import FocusableGrid from '@presentation/components/FocusableGrid.vue';
+import HeroBanner from '@presentation/components/HeroBanner.vue';
+import Rail from '@presentation/components/Rail.vue';
 
 const router = useRouter();
 const watchStore = useWatchStore();
@@ -21,6 +22,15 @@ const continueWatchingMovie = computed<Movie | null>(() => {
   return movies.value.find((m) => m.id === continueWatching.video_id) ?? null;
 });
 
+const heroMovie = computed<Movie | null>(
+  () => continueWatchingMovie.value ?? movies.value[0] ?? null
+);
+const heroProgress = computed(() => watchStore.continueWatching?.progress_percentage ?? 0);
+
+const restOfCatalog = computed<Movie[]>(() =>
+  movies.value.filter((m) => m.id !== continueWatchingMovie.value?.id)
+);
+
 function progressFor(movieId: number): number {
   if (watchStore.continueWatching?.video_id === movieId) {
     return watchStore.continueWatching.progress_percentage;
@@ -28,7 +38,12 @@ function progressFor(movieId: number): number {
   return 0;
 }
 
-function openMovie(id: number): void {
+function openTitle(id: number): void {
+  router.push({ name: 'title', params: { id } });
+}
+
+function playMovie(id: number | undefined): void {
+  if (id == null) return;
   router.push({ name: 'watch', params: { id } });
 }
 
@@ -49,62 +64,43 @@ onMounted(async () => {
 
 <template>
   <div class="home">
-    <section v-if="continueWatchingMovie" class="continue-section">
-      <h2 class="section-title">ادامه تماشا</h2>
-      <FocusableGrid>
-        <div class="continue-row">
-          <VideoCard
-            :movie="continueWatchingMovie"
-            :progress-percent="watchStore.continueWatching?.progress_percentage ?? 0"
-            @select="openMovie"
-          />
-        </div>
-      </FocusableGrid>
-    </section>
+    <p v-if="loading" class="status">در حال بارگذاری...</p>
+    <p v-else-if="error" class="status error">{{ error }}</p>
 
-    <section>
-      <h2 class="section-title">همه ویدیوها</h2>
+    <template v-else>
+      <HeroBanner
+        v-if="heroMovie"
+        :movie="heroMovie"
+        :progress-percent="heroProgress"
+        @play="playMovie(heroMovie?.id)"
+        @info="openTitle(heroMovie!.id)"
+      />
 
-      <p v-if="loading" class="status">در حال بارگذاری...</p>
-      <p v-else-if="error" class="status error">{{ error }}</p>
+      <Rail v-if="continueWatchingMovie" title="ادامه تماشا" hint="روی سرور ذخیره شده">
+        <VideoCard
+          :movie="continueWatchingMovie"
+          :progress-percent="watchStore.continueWatching?.progress_percentage ?? 0"
+          @select="playMovie"
+        />
+      </Rail>
 
-      <FocusableGrid v-else>
-        <div class="grid">
-          <VideoCard
-            v-for="movie in movies"
-            :key="movie.id"
-            :movie="movie"
-            :progress-percent="progressFor(movie.id)"
-            @select="openMovie"
-          />
-        </div>
-      </FocusableGrid>
-    </section>
+      <Rail title="همه ویدیوها" hint="فهرست کامل دوره‌ها">
+        <VideoCard
+          v-for="movie in restOfCatalog"
+          :key="movie.id"
+          :movie="movie"
+          :progress-percent="progressFor(movie.id)"
+          @select="openTitle"
+        />
+      </Rail>
+    </template>
   </div>
 </template>
 
 <style scoped>
 .home {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
   max-width: 1400px;
   margin: 0 auto;
-}
-
-.section-title {
-  font-size: 1.25rem;
-  margin-bottom: var(--space-3);
-}
-
-.continue-row {
-  max-width: 360px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: var(--space-4);
 }
 
 .status {
@@ -112,6 +108,6 @@ onMounted(async () => {
 }
 
 .status.error {
-  color: var(--color-pink);
+  color: #f87171;
 }
 </style>

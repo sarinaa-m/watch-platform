@@ -114,11 +114,12 @@ function backToIdentifier(): void {
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(14px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45);
+  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
 }
 
 .title {
@@ -167,12 +168,12 @@ function backToIdentifier(): void {
 }
 
 .error {
-  color: var(--color-pink);
+  color: #f87171;
   font-size: 0.9rem;
 }
 
 .primary-btn {
-  background: var(--color-pink);
+  background: var(--color-accent);
   color: #fff;
   border: none;
   padding: 12px 16px;
@@ -210,6 +211,6 @@ function backToIdentifier(): void {
 .ghost-btn:hover,
 .ghost-btn:focus-visible {
   color: var(--color-text);
-  border-color: var(--color-teal);
+  border-color: var(--color-accent);
 }
 </style>

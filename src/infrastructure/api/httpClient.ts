@@ -13,15 +13,6 @@ interface RequestOptions {
   headers?: Record<string, string>;
 }
 
-/**
- * Thin fetch wrapper.
- * - Prefixes every call with the API base URL
- * - Attaches the Bearer token when present
- * - Normalizes errors into a single shape: { status, error, message }
- * - Emits a `auth:unauthorized` window event on 401 so the app can react
- *   (e.g. clear the session and redirect to /login) without every call
- *   site needing to know about routing.
- */
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, token, headers = {} } = options;
   const finalHeaders: Record<string, string> = { ...headers };

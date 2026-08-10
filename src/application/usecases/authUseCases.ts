@@ -1,12 +1,16 @@
-import { requestOtp, verifyOtp, getCurrentUser } from '@infra/adapters/authRepositoryImpl';
 import type { Session } from '@domain/entities/session';
+import { authorityRepository } from '@infra/adapters/authRepositoryImpl';
+
+export const useAuth = () => {
+  return;
+};
 
 export async function requestOtpUseCase(identifier: string): Promise<void> {
-  await requestOtp(identifier);
+  await authorityRepository.requestOtp(identifier);
 }
 
 export async function verifyOtpUseCase(identifier: string, otp: string): Promise<Session> {
-  const res = await verifyOtp(identifier, otp);
+  const res = await authorityRepository.verifyOtp(identifier, otp);
   return {
     token: res.access_token,
     identifier,
@@ -15,6 +19,6 @@ export async function verifyOtpUseCase(identifier: string, otp: string): Promise
 }
 
 export async function fetchCurrentUserUseCase(token: string): Promise<string> {
-  const res = await getCurrentUser(token);
+  const res = await authorityRepository.getCurrentUser(token);
   return res.identifier;
 }

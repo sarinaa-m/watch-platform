@@ -17,6 +17,10 @@ const emit = defineEmits<{
 }>();
 
 const videoRef = ref<HTMLVideoElement | null>(null);
+const currentTime = ref(0);
+const duration = ref(0);
+const paused = ref(true);
+const muted = ref(false);
 let hls: Hls | null = null;
 
 function loadSource(): void {
@@ -55,17 +59,37 @@ function destroyHls(): void {
 function handleTimeUpdate(): void {
   const video = videoRef.value;
   if (!video) return;
+  currentTime.value = video.currentTime;
   emit('timeupdate', video.currentTime);
+}
+
+function handleDurationChange(): void {
+  const video = videoRef.value;
+  if (!video) return;
+  duration.value = video.duration || 0;
+}
+
+function handlePlayState(): void {
+  const video = videoRef.value;
+  if (!video) return;
+  paused.value = video.paused;
 }
 
 function handlePause(): void {
   const video = videoRef.value;
   if (!video) return;
+  paused.value = true;
   emit('pause', video.currentTime);
 }
 
+function handleVolumeChange(): void {
+  const video = videoRef.value;
+  if (!video) return;
+  muted.value = video.muted;
+}
+
 // Keyboard shortcuts: space/enter play-pause, left/right seek 10s.
-// These work alongside the browser's native <video> controls.
+// These work alongside the custom control chrome the parent renders.
 function handleKeydown(e: KeyboardEvent): void {
   const video = videoRef.value;
   if (!video) return;
@@ -78,13 +102,42 @@ function handleKeydown(e: KeyboardEvent): void {
       break;
     case 'ArrowRight':
       e.preventDefault();
-      video.currentTime = Math.min(video.duration || Infinity, video.currentTime + 10);
+      seekBy(10);
       break;
     case 'ArrowLeft':
       e.preventDefault();
-      video.currentTime = Math.max(0, video.currentTime - 10);
+      seekBy(-10);
       break;
   }
+}
+
+function play(): void {
+  videoRef.value?.play();
+}
+
+function pause(): void {
+  videoRef.value?.pause();
+}
+
+function seekBy(seconds: number): void {
+  const video = videoRef.value;
+  if (!video) return;
+  video.currentTime = Math.max(
+    0,
+    Math.min(video.duration || Infinity, video.currentTime + seconds)
+  );
+}
+
+function seekTo(seconds: number): void {
+  const video = videoRef.value;
+  if (!video) return;
+  video.currentTime = Math.max(0, Math.min(video.duration || Infinity, seconds));
+}
+
+function toggleMute(): void {
+  const video = videoRef.value;
+  if (!video) return;
+  video.muted = !video.muted;
 }
 
 onMounted(loadSource);
@@ -98,17 +151,31 @@ watch(
   }
 );
 
-defineExpose({ videoRef });
+defineExpose({
+  videoRef,
+  play,
+  pause,
+  seekBy,
+  seekTo,
+  toggleMute,
+  currentTime,
+  duration,
+  paused,
+  muted,
+});
 </script>
 
 <template>
   <video
     ref="videoRef"
     class="focusable player"
-    controls
+    playsinline
     tabindex="0"
     @timeupdate="handleTimeUpdate"
+    @durationchange="handleDurationChange"
+    @play="handlePlayState"
     @pause="handlePause"
+    @volumechange="handleVolumeChange"
     @keydown="handleKeydown"
   />
 </template>
@@ -116,9 +183,9 @@ defineExpose({ videoRef });
 <style scoped>
 .player {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  border-radius: var(--radius-md);
+  height: 100%;
+  object-fit: cover;
   display: block;
+  background: #000;
 }
 </style>

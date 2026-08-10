@@ -35,7 +35,7 @@ defineEmits<{ select: [id: number] }>();
 .card {
   display: block;
   text-align: right;
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -45,13 +45,15 @@ defineEmits<{ select: [id: number] }>();
   width: 100%;
   transition:
     transform 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
 }
 
 .card:hover,
 .card:focus-visible {
   transform: translateY(-4px);
-  border-color: var(--color-teal);
+  border-color: var(--color-accent-strong);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
 }
 
 .thumb-wrap {
@@ -78,7 +80,7 @@ defineEmits<{ select: [id: number] }>();
 
 .progress-fill {
   height: 100%;
-  background: var(--color-pink);
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
 }
 
 .meta {
