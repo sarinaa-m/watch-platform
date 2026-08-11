@@ -3,6 +3,7 @@ import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMovieItem } from '@application/usecases/movieUseCases';
 import { useVideoProgress } from '@application/usecases/watchProgressUseCases';
+import { usePlaybackStatusLabels } from '@presentation/composables/usePlaybackStatusLabels';
 import QueryState from '@presentation/components/QueryState.vue';
 
 const props = defineProps<{ id: string | number }>();
@@ -10,14 +11,7 @@ const props = defineProps<{ id: string | number }>();
 const router = useRouter();
 const progress = useVideoProgress(() => Number(props.id));
 const progressPercent = computed(() => progress.value.progressPercent);
-
-const statusLabel = computed(() => {
-  if (progressPercent.value >= 98) return '✓ دیده‌شده';
-  if (progressPercent.value > 2) return `ادامه از ${Math.round(progressPercent.value)}٪`;
-  return 'تماشا نشده';
-});
-
-const playLabel = computed(() => (progressPercent.value > 2 ? '▶ ادامه تماشا' : '▶ شروع تماشا'));
+const { statusLabel, playLabel } = usePlaybackStatusLabels(progressPercent);
 
 function play(): void {
   router.push({ name: 'watch', params: { id: props.id } });

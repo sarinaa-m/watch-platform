@@ -23,5 +23,14 @@ export function useContinueWatchingMovies() {
       .filter((item): item is ContinueWatchingMovie => item !== null);
   });
 
-  return { items, isPending, error };
+  const restOfCatalog = computed<Movie[]>(() => {
+    const continueWatchingIds = new Set(items.value.map((item) => item.movie.id));
+    return movies.value.filter((m) => !continueWatchingIds.has(m.id));
+  });
+
+  function progressFor(movieId: number | undefined): number {
+    return items.value.find((item) => item.movie.id === movieId)?.progressPercent ?? 0;
+  }
+
+  return { items, restOfCatalog, progressFor, isPending, error };
 }
