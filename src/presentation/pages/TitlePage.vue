@@ -2,16 +2,17 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMovieItem } from '@application/usecases/movieUseCases';
-import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
+import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
 
 const props = defineProps<{ id: string | number }>();
 
 const router = useRouter();
-const { continueWatching } = useContinueWatchingQuery();
+const { data: continueWatching } = useContinueWatchingQuery();
 
 const progressPercent = computed(() => {
   const cw = continueWatching.value;
-  if (cw && cw.video_id === Number(props.id)) return cw.progress_percentage;
+  const cwIndex = cw?.data.find((entry) => entry.video_id === Number(props.id));
+  if (cwIndex) return cwIndex.progress_percentage;
   return 0;
 });
 
@@ -27,7 +28,7 @@ function play(): void {
   router.push({ name: 'watch', params: { id: props.id } });
 }
 
-const { movie, isPending, error } = useMovieItem(() => Number(props.id));
+const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 </script>
 
 <template>

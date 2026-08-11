@@ -1,17 +1,26 @@
 import { watchProgressRepository } from '@infra/adapters/watchProgressRepositoryImpl';
+import { computed } from 'vue';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
+import { useAuth } from '@infra/state/authState';
+import { watchProgressKeys } from '@shared/api/queryKeys';
+import type { UpdateWatchingDTO } from '@domain/ports';
 
-import type { WatchProgress } from '@domain/entities/watchProgress';
-
-export async function fetchContinueWatchingUseCase(): Promise<WatchProgress | null> {
-  const res = await watchProgressRepository.getContinueWatching();
-  // The spec guarantees 0 or 1 entries, so `total: 0` is a normal empty state.
-  return res.data[0] ?? null;
+export function useContinueWatchingQuery() {
+  const auth = useAuth();
+  return useQuery({
+    queryKey: watchProgressKeys.all,
+    queryFn: () => watchProgressRepository.getContinueWatching(),
+    enabled: computed(() => auth.isAuthenticated.value),
+  });
 }
 
-export function syncWatchProgressUseCase(
-  videoId: number,
-  positionSeconds: number,
-  keepalive = false
-): Promise<WatchProgress> {
-  return watchProgressRepository.updateWatchProgress({ videoId, positionSeconds, keepalive });
+export function useSyncProgressMutation() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (dto: UpdateWatchingDTO) => watchProgressRepository.updateWatchProgress(dto),
+    onSuccess: (data) => {
+      queryClient.setQueryData(watchProgressKeys.continueWatching(), data);
+    },
+    retry: false,
+  });
 }

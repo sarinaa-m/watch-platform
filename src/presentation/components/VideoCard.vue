@@ -33,8 +33,10 @@ defineEmits<{ select: [id: number] }>();
 
 <style scoped>
 .card {
-  display: block;
-  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  text-align: left;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -43,6 +45,7 @@ defineEmits<{ select: [id: number] }>();
   padding: 0;
   color: inherit;
   width: 100%;
+  height: 100%;
   transition:
     transform 0.15s ease,
     border-color 0.15s ease,
@@ -60,12 +63,14 @@ defineEmits<{ select: [id: number] }>();
   position: relative;
   aspect-ratio: 16 / 9;
   background: var(--color-bg-elevated);
+  flex: 0 0 auto;
 }
 
 .thumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: top;
   display: block;
 }
 
@@ -85,18 +90,25 @@ defineEmits<{ select: [id: number] }>();
 
 .meta {
   padding: var(--space-3);
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .card-title {
   font-size: 1rem;
   margin-bottom: var(--space-1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .card-desc {
   font-size: 0.85rem;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-overflow: ellipsis;
 }
 </style>

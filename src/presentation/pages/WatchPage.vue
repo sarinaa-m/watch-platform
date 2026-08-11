@@ -1,25 +1,25 @@
 <script setup lang="ts">
 import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
-import {
-  useContinueWatchingQuery,
-  useSyncProgressMutation,
-} from '@infra/query/useWatchProgressQuery';
 import { isFatalApiError } from '@infra/api/httpClient';
 import VideoPlayer from '@presentation/components/VideoPlayer.vue';
 import SyncToast from '@presentation/components/SyncToast.vue';
 import { useMovieItem } from '@application/usecases/movieUseCases';
+import {
+  useContinueWatchingQuery,
+  useSyncProgressMutation,
+} from '@application/usecases/watchProgressUseCases';
 
 const props = defineProps<{
   id: string | number;
 }>();
 
 const router = useRouter();
-const { continueWatching } = useContinueWatchingQuery();
-const syncMutation = useSyncProgressMutation();
+const { data: continueWatching, isPending } = useContinueWatchingQuery();
+const { mutateAsync: syncMutation } = useSyncProgressMutation();
 
 function syncProgress(positionSeconds: number, keepalive = false) {
-  return syncMutation.mutateAsync({
+  return syncMutation({
     videoId: Number(props.id),
     positionSeconds,
     keepalive,
@@ -31,11 +31,10 @@ const showToast = ref(false);
 const toastDetail = ref('');
 const autoplayBlocked = ref(false);
 
-// Resume position only applies if this is the video the user last left
-// off on; otherwise a fresh video starts at 0.
 const startPosition = computed(() => {
   const cw = continueWatching.value;
-  if (cw && cw.video_id === Number(props.id)) return cw.position_seconds;
+  const cwIndex = cw?.data.find((entry) => entry.video_id === Number(props.id));
+  if (cwIndex) return cwIndex.position_seconds;
   return 0;
 });
 
@@ -149,7 +148,7 @@ function seekBar(e: MouseEvent): void {
   playerRef.value?.seekTo(fraction * duration.value);
 }
 
-const { movie, isPending, error } = useMovieItem(() => Number(props.id));
+const { data: movie, error } = useMovieItem(() => Number(props.id));
 
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);

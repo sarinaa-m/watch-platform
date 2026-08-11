@@ -14,9 +14,9 @@ const { data, isPending, error } = useMovieList();
 const movies = computed(() => data.value?.data ?? []);
 
 const results = computed<Movie[]>(() => {
-  const q = query.value.trim();
+  const q = query.value.trim().toLocaleLowerCase();
   if (!q) return movies.value ?? [];
-  return movies.value?.filter((m) => (m.title + m.description).includes(q)) ?? [];
+  return movies.value?.filter((m) => m.title.includes(q)) ?? [];
 });
 
 function openTitle(id: number): void {

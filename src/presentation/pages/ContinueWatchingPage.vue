@@ -1,21 +1,30 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
 import type { Movie } from '@domain/entities/movie';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
 import { useMovieList } from '@application/usecases/movieUseCases';
+import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
 
 const router = useRouter();
-const { continueWatching } = useContinueWatchingQuery();
-const { data, isPending, error } = useMovieList();
+const {
+  data: continueWatching,
+  isPending: isContinueWatchingPending,
+  error,
+} = useContinueWatchingQuery();
+const { data } = useMovieList();
 
 const movies = computed(() => data.value?.data ?? []);
 
-const continueWatchingMovie = computed<Movie | null>(() => {
-  if (!continueWatching.value) return null;
-  return movies.value?.find((m) => m.id === continueWatching.value?.video_id) ?? null;
+const continueWatchingMovies = computed<{ movie: Movie; progressPercent: number }[]>(() => {
+  const entries = continueWatching.value?.data ?? [];
+  return entries
+    .map((entry) => {
+      const movie = movies.value.find((m) => m.id === entry.video_id);
+      return movie ? { movie, progressPercent: entry.progress_percentage } : null;
+    })
+    .filter((item): item is { movie: Movie; progressPercent: number } => item !== null);
 });
 
 function resume(id: number): void {
@@ -32,15 +41,17 @@ function resume(id: number): void {
       </p>
     </div>
 
-    <p v-if="isPending" class="status">در حال بارگذاری...</p>
+    <p v-if="isContinueWatchingPending" class="status">در حال بارگذاری...</p>
     <p v-else-if="error" class="status error">{{ error.message }}</p>
-    <p v-else-if="!continueWatchingMovie" class="status">چیزی برای ادامه تماشا نیست.</p>
+    <p v-else-if="!continueWatchingMovies.length" class="status">چیزی برای ادامه تماشا نیست.</p>
 
     <FocusableGrid v-else>
       <div class="grid">
         <VideoCard
-          :movie="continueWatchingMovie"
-          :progress-percent="continueWatching?.progress_percentage ?? 0"
+          v-for="item in continueWatchingMovies"
+          :key="item.movie.id"
+          :movie="item.movie"
+          :progress-percent="item.progressPercent"
           @select="resume"
         />
       </div>

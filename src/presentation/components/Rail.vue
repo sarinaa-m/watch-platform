@@ -47,10 +47,12 @@ withDefaults(
 }
 
 .rail-row {
-  display: flex;
-  gap: var(--space-4);
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: var(--space-1);
+  row-gap: var(--space-3);
   overflow-x: auto;
-  padding-bottom: var(--space-2);
+  padding: var(--space-2);
 }
 
 .rail-row > :deep(*) {
