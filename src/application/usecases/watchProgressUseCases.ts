@@ -1,5 +1,5 @@
 import { watchProgressRepository } from '@infra/adapters/watchProgressRepositoryImpl';
-import { computed } from 'vue';
+import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { useAuth } from '@infra/state/authState';
 import { watchProgressKeys } from '@shared/api/queryKeys';
@@ -11,6 +11,18 @@ export function useContinueWatchingQuery() {
     queryKey: watchProgressKeys.all,
     queryFn: () => watchProgressRepository.getContinueWatching(),
     enabled: computed(() => auth.isAuthenticated.value),
+  });
+}
+
+export function useVideoProgress(id: MaybeRefOrGetter<number>) {
+  const { data: continueWatching } = useContinueWatchingQuery();
+  return computed(() => {
+    const videoId = toValue(id);
+    const entry = continueWatching.value?.data.find((e) => e.video_id === videoId);
+    return {
+      progressPercent: entry?.progress_percentage ?? 0,
+      positionSeconds: entry?.position_seconds ?? 0,
+    };
   });
 }
 

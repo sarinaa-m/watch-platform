@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import type { Movie } from '@domain/entities/movie';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
+import QueryState from '@presentation/components/QueryState.vue';
 import { useMovieList } from '@application/usecases/movieUseCases';
 
 const router = useRouter();
@@ -35,10 +36,7 @@ function openTitle(id: number): void {
       />
     </div>
 
-    <p v-if="isPending" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error.message }}</p>
-
-    <template v-else>
+    <QueryState :pending="isPending" :error="error">
       <p class="results-label">
         <template v-if="query">«{{ query }}» — </template>{{ results.length }} نتیجه
       </p>
@@ -47,7 +45,7 @@ function openTitle(id: number): void {
           <VideoCard v-for="movie in results" :key="movie.id" :movie="movie" @select="openTitle" />
         </div>
       </FocusableGrid>
-    </template>
+    </QueryState>
   </div>
 </template>
 
@@ -87,13 +85,5 @@ function openTitle(id: number): void {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: var(--space-4);
-}
-
-.status {
-  color: var(--color-text-muted);
-}
-
-.status.error {
-  color: #f87171;
 }
 </style>

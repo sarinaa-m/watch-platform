@@ -4,23 +4,15 @@ import { useRouter } from 'vue-router';
 import type { Movie } from '@domain/entities/movie';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import Rail from '@presentation/components/Rail.vue';
+import QueryState from '@presentation/components/QueryState.vue';
 import { useMovieList } from '@application/usecases/movieUseCases';
-import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
+import { useContinueWatchingMovies } from '@application/usecases/continueWatchingUseCases';
 
 const router = useRouter();
-const { data: continueWatching } = useContinueWatchingQuery();
 const { isPending, data, error } = useMovieList();
 const movies = computed(() => data.value?.data ?? []);
 
-const continueWatchingMovies = computed<{ movie: Movie; progressPercent: number }[]>(() => {
-  const entries = continueWatching.value?.data ?? [];
-  return entries
-    .map((entry) => {
-      const movie = movies.value.find((m) => m.id === entry.video_id);
-      return movie ? { movie, progressPercent: entry.progress_percentage } : null;
-    })
-    .filter((item): item is { movie: Movie; progressPercent: number } => item !== null);
-});
+const { items: continueWatchingMovies } = useContinueWatchingMovies();
 
 const restOfCatalog = computed<Movie[]>(() => {
   const continueWatchingIds = new Set(continueWatchingMovies.value.map((item) => item.movie.id));
@@ -45,10 +37,7 @@ function playMovie(id: number | undefined): void {
 
 <template>
   <div class="home">
-    <p v-if="isPending" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error.message }}</p>
-
-    <template v-else>
+    <QueryState :pending="isPending" :error="error">
       <Rail v-if="continueWatchingMovies.length" title="ادامه تماشا" hint="روی سرور ذخیره شده">
         <VideoCard
           v-for="item in continueWatchingMovies"
@@ -68,7 +57,7 @@ function playMovie(id: number | undefined): void {
           @select="openTitle"
         />
       </Rail>
-    </template>
+    </QueryState>
   </div>
 </template>
 
@@ -76,13 +65,5 @@ function playMovie(id: number | undefined): void {
 .home {
   max-width: 1400px;
   margin: 0 auto;
-}
-
-.status {
-  color: var(--color-text-muted);
-}
-
-.status.error {
-  color: #f87171;
 }
 </style>

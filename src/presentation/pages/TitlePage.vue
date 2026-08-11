@@ -2,19 +2,14 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMovieItem } from '@application/usecases/movieUseCases';
-import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
+import { useVideoProgress } from '@application/usecases/watchProgressUseCases';
+import QueryState from '@presentation/components/QueryState.vue';
 
 const props = defineProps<{ id: string | number }>();
 
 const router = useRouter();
-const { data: continueWatching } = useContinueWatchingQuery();
-
-const progressPercent = computed(() => {
-  const cw = continueWatching.value;
-  const cwIndex = cw?.data.find((entry) => entry.video_id === Number(props.id));
-  if (cwIndex) return cwIndex.progress_percentage;
-  return 0;
-});
+const progress = useVideoProgress(() => Number(props.id));
+const progressPercent = computed(() => progress.value.progressPercent);
 
 const statusLabel = computed(() => {
   if (progressPercent.value >= 98) return '✓ دیده‌شده';
@@ -37,35 +32,37 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
       → بازگشت
     </button>
 
-    <p v-if="isPending" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error.message }}</p>
-
-    <template v-else-if="movie">
-      <div class="hero" :style="{ backgroundImage: `url(${movie.cover_image})` }">
-        <div class="scrim" />
-        <div class="hero-content">
-          <h1 class="title">{{ movie.title }}</h1>
-          <p class="desc">{{ movie.description }}</p>
-          <button class="focusable play-btn" tabindex="0" @click="play">{{ playLabel }}</button>
+    <QueryState :pending="isPending" :error="error">
+      <template v-if="movie">
+        <div class="hero" :style="{ backgroundImage: `url(${movie.cover_image})` }">
+          <div class="scrim" />
+          <div class="hero-content">
+            <h1 class="title">{{ movie.title }}</h1>
+            <p class="desc">{{ movie.description }}</p>
+            <button class="focusable play-btn" tabindex="0" @click="play">{{ playLabel }}</button>
+          </div>
         </div>
-      </div>
 
-      <div class="episodes">
-        <h2 class="section-title">قسمت‌ها</h2>
-        <div class="episode-row focusable" tabindex="0" @click="play" @keydown.enter="play">
-          <div class="episode-num">۱</div>
-          <div class="episode-thumb" :style="{ backgroundImage: `url(${movie.cover_image})` }">
-            <div class="progress-track">
-              <div class="progress-fill" :style="{ width: Math.min(100, progressPercent) + '%' }" />
+        <div class="episodes">
+          <h2 class="section-title">قسمت‌ها</h2>
+          <div class="episode-row focusable" tabindex="0" @click="play" @keydown.enter="play">
+            <div class="episode-num">۱</div>
+            <div class="episode-thumb" :style="{ backgroundImage: `url(${movie.cover_image})` }">
+              <div class="progress-track">
+                <div
+                  class="progress-fill"
+                  :style="{ width: Math.min(100, progressPercent) + '%' }"
+                />
+              </div>
+            </div>
+            <div class="episode-meta">
+              <div class="episode-title">{{ movie.title }}</div>
+              <div class="episode-status">{{ statusLabel }}</div>
             </div>
           </div>
-          <div class="episode-meta">
-            <div class="episode-title">{{ movie.title }}</div>
-            <div class="episode-status">{{ statusLabel }}</div>
-          </div>
         </div>
-      </div>
-    </template>
+      </template>
+    </QueryState>
   </div>
 </template>
 
@@ -217,13 +214,5 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 .episode-status {
   font-size: 0.85rem;
   color: var(--color-text-muted);
-}
-
-.status {
-  color: var(--color-text-muted);
-}
-
-.status.error {
-  color: #f87171;
 }
 </style>

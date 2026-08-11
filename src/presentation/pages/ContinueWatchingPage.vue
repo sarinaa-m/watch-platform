@@ -1,31 +1,12 @@
 <script setup lang="ts">
-import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import type { Movie } from '@domain/entities/movie';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
-import { useMovieList } from '@application/usecases/movieUseCases';
-import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
+import QueryState from '@presentation/components/QueryState.vue';
+import { useContinueWatchingMovies } from '@application/usecases/continueWatchingUseCases';
 
 const router = useRouter();
-const {
-  data: continueWatching,
-  isPending: isContinueWatchingPending,
-  error,
-} = useContinueWatchingQuery();
-const { data } = useMovieList();
-
-const movies = computed(() => data.value?.data ?? []);
-
-const continueWatchingMovies = computed<{ movie: Movie; progressPercent: number }[]>(() => {
-  const entries = continueWatching.value?.data ?? [];
-  return entries
-    .map((entry) => {
-      const movie = movies.value.find((m) => m.id === entry.video_id);
-      return movie ? { movie, progressPercent: entry.progress_percentage } : null;
-    })
-    .filter((item): item is { movie: Movie; progressPercent: number } => item !== null);
-});
+const { items: continueWatchingMovies, isPending, error } = useContinueWatchingMovies();
 
 function resume(id: number): void {
   router.push({ name: 'watch', params: { id } });
@@ -41,21 +22,21 @@ function resume(id: number): void {
       </p>
     </div>
 
-    <p v-if="isContinueWatchingPending" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error.message }}</p>
-    <p v-else-if="!continueWatchingMovies.length" class="status">چیزی برای ادامه تماشا نیست.</p>
+    <QueryState :pending="isPending" :error="error">
+      <p v-if="!continueWatchingMovies.length" class="status">چیزی برای ادامه تماشا نیست.</p>
 
-    <FocusableGrid v-else>
-      <div class="grid">
-        <VideoCard
-          v-for="item in continueWatchingMovies"
-          :key="item.movie.id"
-          :movie="item.movie"
-          :progress-percent="item.progressPercent"
-          @select="resume"
-        />
-      </div>
-    </FocusableGrid>
+      <FocusableGrid v-else>
+        <div class="grid">
+          <VideoCard
+            v-for="item in continueWatchingMovies"
+            :key="item.movie.id"
+            :movie="item.movie"
+            :progress-percent="item.progressPercent"
+            @select="resume"
+          />
+        </div>
+      </FocusableGrid>
+    </QueryState>
   </div>
 </template>
 
@@ -84,9 +65,5 @@ function resume(id: number): void {
 
 .status {
   color: var(--color-text-muted);
-}
-
-.status.error {
-  color: #f87171;
 }
 </style>

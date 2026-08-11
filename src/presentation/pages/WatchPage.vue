@@ -6,7 +6,7 @@ import VideoPlayer from '@presentation/components/VideoPlayer.vue';
 import SyncToast from '@presentation/components/SyncToast.vue';
 import { useMovieItem } from '@application/usecases/movieUseCases';
 import {
-  useContinueWatchingQuery,
+  useVideoProgress,
   useSyncProgressMutation,
 } from '@application/usecases/watchProgressUseCases';
 
@@ -15,7 +15,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const { data: continueWatching, isPending } = useContinueWatchingQuery();
+const progress = useVideoProgress(() => Number(props.id));
 const { mutateAsync: syncMutation } = useSyncProgressMutation();
 
 function syncProgress(positionSeconds: number, keepalive = false) {
@@ -31,12 +31,7 @@ const showToast = ref(false);
 const toastDetail = ref('');
 const autoplayBlocked = ref(false);
 
-const startPosition = computed(() => {
-  const cw = continueWatching.value;
-  const cwIndex = cw?.data.find((entry) => entry.video_id === Number(props.id));
-  if (cwIndex) return cwIndex.position_seconds;
-  return 0;
-});
+const startPosition = computed(() => progress.value.positionSeconds);
 
 const currentTime = computed(() => playerRef.value?.currentTime ?? 0);
 const duration = computed(() => playerRef.value?.duration ?? 0);
@@ -148,7 +143,7 @@ function seekBar(e: MouseEvent): void {
   playerRef.value?.seekTo(fraction * duration.value);
 }
 
-const { data: movie, error } = useMovieItem(() => Number(props.id));
+const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 
 onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);
