@@ -1,19 +1,13 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { getMovieUseCase } from '@application/usecases/movieUseCases';
+import { useMovieItem } from '@application/usecases/movieUseCases';
 import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
-import type { Movie } from '@domain/entities/movie';
-import type { ApiError } from '@infra/api/httpClient';
 
 const props = defineProps<{ id: string | number }>();
 
 const router = useRouter();
 const { continueWatching } = useContinueWatchingQuery();
-
-const movie = ref<Movie | null>(null);
-const loading = ref(true);
-const error = ref('');
 
 const progressPercent = computed(() => {
   const cw = continueWatching.value;
@@ -33,16 +27,7 @@ function play(): void {
   router.push({ name: 'watch', params: { id: props.id } });
 }
 
-onMounted(async () => {
-  try {
-    // Continue-watching is fetched by vue-query, not awaited here.
-    movie.value = await getMovieUseCase(props.id);
-  } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'دوره یافت نشد.';
-  } finally {
-    loading.value = false;
-  }
-});
+const { movie, isPending, error } = useMovieItem(() => Number(props.id));
 </script>
 
 <template>
@@ -51,8 +36,8 @@ onMounted(async () => {
       → بازگشت
     </button>
 
-    <p v-if="loading" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error }}</p>
+    <p v-if="isPending" class="status">در حال بارگذاری...</p>
+    <p v-else-if="error" class="status error">{{ error.message }}</p>
 
     <template v-else-if="movie">
       <div class="hero" :style="{ backgroundImage: `url(${movie.cover_image})` }">

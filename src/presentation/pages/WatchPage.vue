@@ -1,15 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
+import { ref, onMounted, onBeforeUnmount, computed, watch } from 'vue';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
-import { getMovieUseCase } from '@application/usecases/movieUseCases';
 import {
   useContinueWatchingQuery,
   useSyncProgressMutation,
 } from '@infra/query/useWatchProgressQuery';
-import type { Movie } from '@domain/entities/movie';
-import { isFatalApiError, type ApiError } from '@infra/api/httpClient';
+import { isFatalApiError } from '@infra/api/httpClient';
 import VideoPlayer from '@presentation/components/VideoPlayer.vue';
 import SyncToast from '@presentation/components/SyncToast.vue';
+import { useMovieItem } from '@application/usecases/movieUseCases';
 
 const props = defineProps<{
   id: string | number;
@@ -28,11 +27,9 @@ function syncProgress(positionSeconds: number, keepalive = false) {
 }
 const playerRef = ref<InstanceType<typeof VideoPlayer> | null>(null);
 
-const movie = ref<Movie | null>(null);
-const loading = ref(true);
-const error = ref('');
 const showToast = ref(false);
 const toastDetail = ref('');
+const autoplayBlocked = ref(false);
 
 // Resume position only applies if this is the video the user last left
 // off on; otherwise a fresh video starts at 0.
@@ -126,8 +123,23 @@ onBeforeRouteLeave(() => {
 });
 
 function togglePlay(): void {
-  if (paused.value) playerRef.value?.play();
-  else playerRef.value?.pause();
+  if (!paused.value) {
+    playerRef.value?.pause();
+    return;
+  }
+  // A click is a user gesture, so this normally satisfies the autoplay policy;
+  // if it still fails, fall back to the muted retry rather than failing silently.
+  playerRef.value?.play().catch(() => playerRef.value?.attemptAutoplay());
+}
+
+// Autoplay was blocked and playback continues muted; surface the unmute path.
+function handleBlocked(): void {
+  autoplayBlocked.value = true;
+}
+
+function unmute(): void {
+  playerRef.value?.toggleMute();
+  autoplayBlocked.value = false;
 }
 
 function seekBar(e: MouseEvent): void {
@@ -137,17 +149,23 @@ function seekBar(e: MouseEvent): void {
   playerRef.value?.seekTo(fraction * duration.value);
 }
 
-onMounted(async () => {
+const { movie, isPending, error } = useMovieItem(() => Number(props.id));
+
+onMounted(() => {
   window.addEventListener('beforeunload', handleBeforeUnload);
-  try {
-    movie.value = await getMovieUseCase(props.id);
-    scheduleSync();
-  } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'ویدیو یافت نشد.';
-  } finally {
-    loading.value = false;
-  }
 });
+
+// The sync loop only makes sense once there is a video to report progress
+// for, and it must restart when the route switches to another video.
+watch(
+  movie,
+  (loaded) => {
+    stopSync();
+    lastKnownPosition = 0;
+    if (loaded) scheduleSync();
+  },
+  { immediate: true }
+);
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -158,17 +176,23 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="watch">
-    <p v-if="loading" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error }}</p>
+    <p v-if="isPending" class="status">در حال بارگذاری...</p>
+    <p v-else-if="error" class="status error">{{ error.message }}</p>
 
     <template v-else-if="movie">
       <VideoPlayer
         ref="playerRef"
         :src="movie.video_url"
         :start-position="startPosition"
+        autoplay
         @timeupdate="handleTimeUpdate"
         @pause="handlePause"
+        @blocked="handleBlocked"
       />
+
+      <button v-if="autoplayBlocked" class="focusable unmute-banner" tabindex="0" @click="unmute">
+        🔇 پخش بی‌صدا شروع شد — برای شنیدن صدا کلیک کنید
+      </button>
 
       <div class="top-bar">
         <button
@@ -224,6 +248,28 @@ onBeforeUnmount(() => {
 
 .status.error {
   color: #f87171;
+}
+
+.unmute-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.unmute-banner:hover,
+.unmute-banner:focus-visible {
+  background: rgba(0, 0, 0, 0.85);
 }
 
 .top-bar {

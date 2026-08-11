@@ -1,39 +1,26 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { listMoviesUseCase } from '@application/usecases/movieUseCases';
 import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
 import type { Movie } from '@domain/entities/movie';
-import type { ApiError } from '@infra/api/httpClient';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
+import { useMovieList } from '@application/usecases/movieUseCases';
 
 const router = useRouter();
 const { continueWatching } = useContinueWatchingQuery();
+const { data, isPending, error } = useMovieList();
 
-const movies = ref<Movie[]>([]);
-const loading = ref(true);
-const error = ref('');
+const movies = computed(() => data.value?.data ?? []);
 
 const continueWatchingMovie = computed<Movie | null>(() => {
   if (!continueWatching.value) return null;
-  return movies.value.find((m) => m.id === continueWatching.value?.video_id) ?? null;
+  return movies.value?.find((m) => m.id === continueWatching.value?.video_id) ?? null;
 });
 
 function resume(id: number): void {
   router.push({ name: 'watch', params: { id } });
 }
-
-onMounted(async () => {
-  try {
-    // Continue-watching is fetched by vue-query, not awaited here.
-    movies.value = await listMoviesUseCase();
-  } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'دریافت اطلاعات با خطا مواجه شد.';
-  } finally {
-    loading.value = false;
-  }
-});
 </script>
 
 <template>
@@ -45,8 +32,8 @@ onMounted(async () => {
       </p>
     </div>
 
-    <p v-if="loading" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error }}</p>
+    <p v-if="isPending" class="status">در حال بارگذاری...</p>
+    <p v-else-if="error" class="status error">{{ error.message }}</p>
     <p v-else-if="!continueWatchingMovie" class="status">چیزی برای ادامه تماشا نیست.</p>
 
     <FocusableGrid v-else>

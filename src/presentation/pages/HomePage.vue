@@ -1,20 +1,17 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { listMoviesUseCase } from '@application/usecases/movieUseCases';
 import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
 import type { Movie } from '@domain/entities/movie';
-import type { ApiError } from '@infra/api/httpClient';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import HeroBanner from '@presentation/components/HeroBanner.vue';
 import Rail from '@presentation/components/Rail.vue';
+import { useMovieList } from '@application/usecases/movieUseCases';
 
 const router = useRouter();
 const { continueWatching } = useContinueWatchingQuery();
-
-const movies = ref<Movie[]>([]);
-const loading = ref(true);
-const error = ref('');
+const { isPending, data, error } = useMovieList();
+const movies = computed(() => data.value?.data ?? []);
 
 const continueWatchingMovie = computed<Movie | null>(() => {
   if (!continueWatching.value) return null;
@@ -45,23 +42,12 @@ function playMovie(id: number | undefined): void {
   if (id == null) return;
   router.push({ name: 'watch', params: { id } });
 }
-
-onMounted(async () => {
-  try {
-    // Continue-watching is fetched by vue-query, not awaited here.
-    movies.value = await listMoviesUseCase();
-  } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'دریافت لیست ویدیوها با خطا مواجه شد.';
-  } finally {
-    loading.value = false;
-  }
-});
 </script>
 
 <template>
   <div class="home">
-    <p v-if="loading" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error }}</p>
+    <p v-if="isPending" class="status">در حال بارگذاری...</p>
+    <p v-else-if="error" class="status error">{{ error.message }}</p>
 
     <template v-else>
       <HeroBanner

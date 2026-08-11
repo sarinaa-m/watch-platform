@@ -1,38 +1,27 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
-import { listMoviesUseCase } from '@application/usecases/movieUseCases';
 import type { Movie } from '@domain/entities/movie';
-import type { ApiError } from '@infra/api/httpClient';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
+import { useMovieList } from '@application/usecases/movieUseCases';
 
 const router = useRouter();
-
-const movies = ref<Movie[]>([]);
 const query = ref('');
-const loading = ref(true);
-const error = ref('');
+
+const { data, isPending, error } = useMovieList();
+
+const movies = computed(() => data.value?.data ?? []);
 
 const results = computed<Movie[]>(() => {
   const q = query.value.trim();
-  if (!q) return movies.value;
-  return movies.value.filter((m) => (m.title + m.description).includes(q));
+  if (!q) return movies.value ?? [];
+  return movies.value?.filter((m) => (m.title + m.description).includes(q)) ?? [];
 });
 
 function openTitle(id: number): void {
   router.push({ name: 'title', params: { id } });
 }
-
-onMounted(async () => {
-  try {
-    movies.value = await listMoviesUseCase();
-  } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'دریافت لیست ویدیوها با خطا مواجه شد.';
-  } finally {
-    loading.value = false;
-  }
-});
 </script>
 
 <template>
@@ -46,8 +35,8 @@ onMounted(async () => {
       />
     </div>
 
-    <p v-if="loading" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error }}</p>
+    <p v-if="isPending" class="status">در حال بارگذاری...</p>
+    <p v-else-if="error" class="status error">{{ error.message }}</p>
 
     <template v-else>
       <p class="results-label">
