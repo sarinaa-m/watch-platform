@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
+import { useAuth } from '@infra/state/authState';
 import type { ApiError } from '@infra/api/httpClient';
 
-const auth = useAuthStore();
+const auth = useAuth();
 const router = useRouter();
 const route = useRoute();
 

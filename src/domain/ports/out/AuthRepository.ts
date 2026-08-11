@@ -3,5 +3,5 @@ import type { VerifyOtpResponse } from '@domain/entities';
 export interface AuthRepository {
   requestOtp(identifier: string): Promise<void>;
   verifyOtp(identifier: string, otp: string): Promise<VerifyOtpResponse>;
-  getCurrentUser(token: string): Promise<{ identifier: string }>;
+  getCurrentUser(): Promise<{ identifier: string }>;
 }

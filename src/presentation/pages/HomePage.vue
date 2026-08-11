@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { listMoviesUseCase } from '@application/usecases/movieUseCases';
-import { useWatchStore } from '@infra/storage/watchStore';
+import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
 import type { Movie } from '@domain/entities/movie';
 import type { ApiError } from '@infra/api/httpClient';
 import VideoCard from '@presentation/components/VideoCard.vue';
@@ -10,30 +10,29 @@ import HeroBanner from '@presentation/components/HeroBanner.vue';
 import Rail from '@presentation/components/Rail.vue';
 
 const router = useRouter();
-const watchStore = useWatchStore();
+const { continueWatching } = useContinueWatchingQuery();
 
 const movies = ref<Movie[]>([]);
 const loading = ref(true);
 const error = ref('');
 
 const continueWatchingMovie = computed<Movie | null>(() => {
-  const continueWatching = watchStore.continueWatching;
-  if (!continueWatching) return null;
-  return movies.value.find((m) => m.id === continueWatching.video_id) ?? null;
+  if (!continueWatching.value) return null;
+  return movies.value.find((m) => m.id === continueWatching.value?.video_id) ?? null;
 });
 
 const heroMovie = computed<Movie | null>(
   () => continueWatchingMovie.value ?? movies.value[0] ?? null
 );
-const heroProgress = computed(() => watchStore.continueWatching?.progress_percentage ?? 0);
+const heroProgress = computed(() => continueWatching.value?.progress_percentage ?? 0);
 
 const restOfCatalog = computed<Movie[]>(() =>
   movies.value.filter((m) => m.id !== continueWatchingMovie.value?.id)
 );
 
 function progressFor(movieId: number): number {
-  if (watchStore.continueWatching?.video_id === movieId) {
-    return watchStore.continueWatching.progress_percentage;
+  if (continueWatching.value?.video_id === movieId) {
+    return continueWatching.value.progress_percentage;
   }
   return 0;
 }
@@ -49,11 +48,8 @@ function playMovie(id: number | undefined): void {
 
 onMounted(async () => {
   try {
-    const [moviesRes] = await Promise.all([
-      listMoviesUseCase(),
-      watchStore.fetchContinueWatching(),
-    ]);
-    movies.value = moviesRes;
+    // Continue-watching is fetched by vue-query, not awaited here.
+    movies.value = await listMoviesUseCase();
   } catch (err) {
     error.value = (err as Partial<ApiError>).message || 'دریافت لیست ویدیوها با خطا مواجه شد.';
   } finally {
@@ -79,7 +75,7 @@ onMounted(async () => {
       <Rail v-if="continueWatchingMovie" title="ادامه تماشا" hint="روی سرور ذخیره شده">
         <VideoCard
           :movie="continueWatchingMovie"
-          :progress-percent="watchStore.continueWatching?.progress_percentage ?? 0"
+          :progress-percent="continueWatching?.progress_percentage ?? 0"
           @select="playMovie"
         />
       </Rail>

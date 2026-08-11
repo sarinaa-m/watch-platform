@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
-import { useUiStore } from '@infra/storage/uiStore';
+import { useAuth } from '@infra/state/authState';
+import { useUiState } from '@infra/state/uiState';
 import { initialsOf } from '@shared/utils/initials';
 
-const auth = useAuthStore();
-const ui = useUiStore();
+const auth = useAuth();
+const ui = useUiState();
 const router = useRouter();
 const route = useRoute();
 
@@ -26,8 +26,8 @@ function select(): void {
     </div>
 
     <button class="focusable profile-tile" tabindex="0" @click="select">
-      <span class="avatar">{{ initialsOf(auth.identifier) }}</span>
-      <span class="name">{{ auth.identifier }}</span>
+      <span class="avatar">{{ initialsOf(auth.state.identifier) }}</span>
+      <span class="name">{{ auth.state.identifier }}</span>
     </button>
   </div>
 </template>

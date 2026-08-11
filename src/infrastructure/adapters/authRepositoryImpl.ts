@@ -4,13 +4,17 @@ import type { VerifyOtpResponse } from '@domain/entities';
 
 export const createAuthRepository = (): AuthRepository => ({
   async requestOtp(identifier: string): Promise<void> {
-    return httpClient.post<void>('/auth/request-otp', { identifier });
+    return httpClient.post<void>('/auth/request-otp', { identifier }, { auth: false });
   },
   async verifyOtp(identifier: string, otp: string): Promise<VerifyOtpResponse> {
-    return httpClient.post<VerifyOtpResponse>('/auth/verify-otp', { identifier, otp });
+    return httpClient.post<VerifyOtpResponse>(
+      '/auth/verify-otp',
+      { identifier, otp },
+      { auth: false }
+    );
   },
-  async getCurrentUser(token: string): Promise<{ identifier: string }> {
-    return httpClient.get<{ identifier: string }>('/auth/me', { token });
+  async getCurrentUser(): Promise<{ identifier: string }> {
+    return httpClient.get<{ identifier: string }>('/auth/me');
   },
 });
 

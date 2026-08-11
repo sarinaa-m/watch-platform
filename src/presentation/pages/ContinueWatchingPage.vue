@@ -2,23 +2,22 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { listMoviesUseCase } from '@application/usecases/movieUseCases';
-import { useWatchStore } from '@infra/storage/watchStore';
+import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
 import type { Movie } from '@domain/entities/movie';
 import type { ApiError } from '@infra/api/httpClient';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
 
 const router = useRouter();
-const watchStore = useWatchStore();
+const { continueWatching } = useContinueWatchingQuery();
 
 const movies = ref<Movie[]>([]);
 const loading = ref(true);
 const error = ref('');
 
 const continueWatchingMovie = computed<Movie | null>(() => {
-  const continueWatching = watchStore.continueWatching;
-  if (!continueWatching) return null;
-  return movies.value.find((m) => m.id === continueWatching.video_id) ?? null;
+  if (!continueWatching.value) return null;
+  return movies.value.find((m) => m.id === continueWatching.value?.video_id) ?? null;
 });
 
 function resume(id: number): void {
@@ -27,11 +26,8 @@ function resume(id: number): void {
 
 onMounted(async () => {
   try {
-    const [moviesRes] = await Promise.all([
-      listMoviesUseCase(),
-      watchStore.fetchContinueWatching(),
-    ]);
-    movies.value = moviesRes;
+    // Continue-watching is fetched by vue-query, not awaited here.
+    movies.value = await listMoviesUseCase();
   } catch (err) {
     error.value = (err as Partial<ApiError>).message || 'دریافت اطلاعات با خطا مواجه شد.';
   } finally {
@@ -57,7 +53,7 @@ onMounted(async () => {
       <div class="grid">
         <VideoCard
           :movie="continueWatchingMovie"
-          :progress-percent="watchStore.continueWatching?.progress_percentage ?? 0"
+          :progress-percent="continueWatching?.progress_percentage ?? 0"
           @select="resume"
         />
       </div>

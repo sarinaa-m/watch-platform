@@ -1,18 +1,21 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
-import { useUiStore } from '@infra/storage/uiStore';
+import { useAuth } from '@infra/state/authState';
+import { useUiState } from '@infra/state/uiState';
 import { initialsOf } from '@shared/utils/initials';
 
-const auth = useAuthStore();
-const ui = useUiStore();
+const auth = useAuth();
+const ui = useUiState();
 const router = useRouter();
 const route = useRoute();
 
 const HIDDEN_CHROME_ROUTES = new Set(['login', 'profile', 'watch']);
 const showChrome = computed(
-  () => auth.isAuthenticated && ui.profileConfirmed && !HIDDEN_CHROME_ROUTES.has(String(route.name))
+  () =>
+    auth.isAuthenticated.value &&
+    ui.state.profileConfirmed &&
+    !HIDDEN_CHROME_ROUTES.has(String(route.name))
 );
 
 const navItems = [
@@ -22,8 +25,8 @@ const navItems = [
 ];
 
 function handleLogout(): void {
+  // logout() clears the UI gate and query cache via its registered hooks.
   auth.logout();
-  ui.reset();
   router.push({ name: 'login' });
 }
 </script>
@@ -48,7 +51,7 @@ function handleLogout(): void {
       <div class="topbar-right">
         <button class="focusable logout-btn" tabindex="0" @click="handleLogout">خروج</button>
         <router-link :to="{ name: 'profile' }" class="focusable avatar" tabindex="0">
-          {{ initialsOf(auth.identifier) }}
+          {{ initialsOf(auth.state.identifier) }}
         </router-link>
       </div>
     </header>

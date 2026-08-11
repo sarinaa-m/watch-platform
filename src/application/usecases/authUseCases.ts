@@ -21,7 +21,7 @@ export async function verifyOtpUseCase(identifier: string, otp: string): Promise
   };
 }
 
-export async function fetchCurrentUserUseCase(token: string): Promise<string> {
-  const res = await authorityRepository.getCurrentUser(token);
+export async function fetchCurrentUserUseCase(): Promise<string> {
+  const res = await authorityRepository.getCurrentUser();
   return res.identifier;
 }

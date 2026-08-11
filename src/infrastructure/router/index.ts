@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
-import { useUiStore } from '@infra/storage/uiStore';
+import { useAuth } from '@infra/state/authState';
+import { useUiState } from '@infra/state/uiState';
 import { PATHS } from './paths';
 
 const routes: RouteRecordRaw[] = [
@@ -50,18 +50,18 @@ export const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  const auth = useAuthStore();
-  if (!to.meta.public && !auth.isAuthenticated) {
+  const auth = useAuth();
+  if (!to.meta.public && !auth.isAuthenticated.value) {
     return { name: PATHS.login.name, query: { redirect: to.fullPath } };
   }
-  if (to.name === PATHS.login.name && auth.isAuthenticated) {
+  if (to.name === PATHS.login.name && auth.isAuthenticated.value) {
     return { name: PATHS.home.name };
   }
 
-  const ui = useUiStore();
+  const ui = useUiState();
   if (
-    auth.isAuthenticated &&
-    !ui.profileConfirmed &&
+    auth.isAuthenticated.value &&
+    !ui.state.profileConfirmed &&
     to.name !== PATHS.profile.name &&
     !to.meta.public
   ) {

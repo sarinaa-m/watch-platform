@@ -2,11 +2,12 @@
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { onBeforeRouteLeave, useRouter } from 'vue-router';
 import { getMovieUseCase } from '@application/usecases/movieUseCases';
-import { useWatchStore } from '@infra/storage/watchStore';
-import { loadStoredSession } from '@shared/utils/sessionStorage';
-import { envConfig } from '@config/env.config';
+import {
+  useContinueWatchingQuery,
+  useSyncProgressMutation,
+} from '@infra/query/useWatchProgressQuery';
 import type { Movie } from '@domain/entities/movie';
-import type { ApiError } from '@infra/api/httpClient';
+import { isFatalApiError, type ApiError } from '@infra/api/httpClient';
 import VideoPlayer from '@presentation/components/VideoPlayer.vue';
 import SyncToast from '@presentation/components/SyncToast.vue';
 
@@ -15,7 +16,16 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
-const watchStore = useWatchStore();
+const { continueWatching } = useContinueWatchingQuery();
+const syncMutation = useSyncProgressMutation();
+
+function syncProgress(positionSeconds: number, keepalive = false) {
+  return syncMutation.mutateAsync({
+    videoId: Number(props.id),
+    positionSeconds,
+    keepalive,
+  });
+}
 const playerRef = ref<InstanceType<typeof VideoPlayer> | null>(null);
 
 const movie = ref<Movie | null>(null);
@@ -27,7 +37,7 @@ const toastDetail = ref('');
 // Resume position only applies if this is the video the user last left
 // off on; otherwise a fresh video starts at 0.
 const startPosition = computed(() => {
-  const cw = watchStore.continueWatching;
+  const cw = continueWatching.value;
   if (cw && cw.video_id === Number(props.id)) return cw.position_seconds;
   return 0;
 });
@@ -62,15 +72,29 @@ function flashToast(time: number): void {
   }, 2000);
 }
 
+function stopSync(): void {
+  if (syncTimer) {
+    clearInterval(syncTimer);
+    syncTimer = null;
+  }
+}
+
+/**
+ * A 4xx from /watch-progress can never be fixed by sending the identical
+ * body again — a rejected payload (400), an unknown video (404), or a dead
+ * session (401, already handled centrally). Retrying every 8s would just
+ * hammer the API, so the loop stops. Network errors keep retrying.
+ */
+function handleSyncError(err: unknown): void {
+  if (isFatalApiError(err)) stopSync();
+}
+
 function scheduleSync(): void {
   syncTimer = setInterval(() => {
     if (lastKnownPosition > 0) {
-      watchStore
-        .syncProgress(Number(props.id), lastKnownPosition)
+      syncProgress(lastKnownPosition)
         .then(() => flashToast(lastKnownPosition))
-        .catch(() => {
-          // Non-fatal: next periodic tick or pause/leave sync will retry.
-        });
+        .catch(handleSyncError);
     }
   }, SYNC_INTERVAL_MS);
 }
@@ -81,36 +105,23 @@ function handleTimeUpdate(time: number): void {
 
 function handlePause(time: number): void {
   lastKnownPosition = time;
-  watchStore
-    .syncProgress(Number(props.id), time)
+  syncProgress(time)
     .then(() => flashToast(time))
-    .catch(() => {});
+    .catch(handleSyncError);
 }
 
 function handleBeforeUnload(): void {
-  // Best-effort sync when the tab/window is closing.
+  // Best-effort sync when the tab/window is closing. sendBeacon can't set an
+  // Authorization header, so this goes through the normal client with
+  // `keepalive` so the request outlives the page.
   if (lastKnownPosition > 0) {
-    const session = loadStoredSession();
-    if (!session?.token) return;
-    const url = `${envConfig.baseApiUrl}/watch-progress`;
-    const body = JSON.stringify({
-      video_id: Number(props.id),
-      position_seconds: lastKnownPosition,
-    });
-    // sendBeacon can't set custom headers for auth, so PUT via fetch with
-    // keepalive as a best-effort fallback for the unload case.
-    fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
-      body,
-      keepalive: true,
-    }).catch(() => {});
+    syncProgress(lastKnownPosition, true).catch(() => {});
   }
 }
 
 onBeforeRouteLeave(() => {
   if (lastKnownPosition > 0) {
-    watchStore.syncProgress(Number(props.id), lastKnownPosition).catch(() => {});
+    syncProgress(lastKnownPosition).catch(() => {});
   }
 });
 
@@ -140,7 +151,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('beforeunload', handleBeforeUnload);
-  if (syncTimer) clearInterval(syncTimer);
+  stopSync();
   if (toastTimer) clearTimeout(toastTimer);
 });
 </script>

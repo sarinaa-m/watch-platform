@@ -2,21 +2,21 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { getMovieUseCase } from '@application/usecases/movieUseCases';
-import { useWatchStore } from '@infra/storage/watchStore';
+import { useContinueWatchingQuery } from '@infra/query/useWatchProgressQuery';
 import type { Movie } from '@domain/entities/movie';
 import type { ApiError } from '@infra/api/httpClient';
 
 const props = defineProps<{ id: string | number }>();
 
 const router = useRouter();
-const watchStore = useWatchStore();
+const { continueWatching } = useContinueWatchingQuery();
 
 const movie = ref<Movie | null>(null);
 const loading = ref(true);
 const error = ref('');
 
 const progressPercent = computed(() => {
-  const cw = watchStore.continueWatching;
+  const cw = continueWatching.value;
   if (cw && cw.video_id === Number(props.id)) return cw.progress_percentage;
   return 0;
 });
@@ -35,11 +35,8 @@ function play(): void {
 
 onMounted(async () => {
   try {
-    const [movieRes] = await Promise.all([
-      getMovieUseCase(props.id),
-      watchStore.fetchContinueWatching(),
-    ]);
-    movie.value = movieRes;
+    // Continue-watching is fetched by vue-query, not awaited here.
+    movie.value = await getMovieUseCase(props.id);
   } catch (err) {
     error.value = (err as Partial<ApiError>).message || 'دوره یافت نشد.';
   } finally {

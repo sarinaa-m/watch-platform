@@ -1,5 +1,6 @@
 export type UpdateWatchingDTO = {
-  token: string;
   videoId: number;
   positionSeconds: number;
+  /** Best-effort write that must survive the page unloading. */
+  keepalive?: boolean;
 };
