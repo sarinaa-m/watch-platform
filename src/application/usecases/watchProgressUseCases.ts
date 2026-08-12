@@ -4,6 +4,8 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { useAuth } from '@infra/state/authState';
 import { watchProgressKeys } from '@shared/api/queryKeys';
 import type { UpdateWatchingDTO } from '@domain/ports';
+import { queryClient } from '@infra/query/queryClient';
+import type { ContinueWatchingResponse } from '@domain/entities/watchProgress';
 
 export function useContinueWatchingQuery() {
   const auth = useAuth();
@@ -15,10 +17,12 @@ export function useContinueWatchingQuery() {
 }
 
 export function useVideoProgress(id: MaybeRefOrGetter<number>) {
-  const { data: continueWatching } = useContinueWatchingQuery();
+  const continueWatching = queryClient.getQueryData<ContinueWatchingResponse>(
+    watchProgressKeys.continueWatching()
+  );
   return computed(() => {
     const videoId = toValue(id);
-    const entry = continueWatching.value?.data.find((e) => e.video_id === videoId);
+    const entry = continueWatching?.data.find((e) => e.video_id === videoId);
     return {
       progressPercent: entry?.progress_percentage ?? 0,
       positionSeconds: entry?.position_seconds ?? 0,

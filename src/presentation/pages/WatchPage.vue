@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import VideoPlayer from '@presentation/components/VideoPlayer.vue';
-import SyncToast from '@presentation/components/SyncToast.vue';
 import { useWatchPlayer } from '@presentation/composables/useWatchPlayer';
 import { formatTime } from '@shared/utils/formatTime';
 
@@ -22,8 +21,6 @@ const {
   paused,
   muted,
   progressPercent,
-  showToast,
-  toastDetail,
   autoplayBlocked,
   handleTimeUpdate,
   handlePause,
@@ -87,8 +84,6 @@ const {
           </button>
         </div>
       </div>
-
-      <SyncToast v-if="showToast" :detail="toastDetail" />
     </template>
   </div>
 </template>

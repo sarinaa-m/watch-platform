@@ -9,7 +9,6 @@ import {
 } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { isFatalApiError } from '@infra/api/httpClient';
-import { formatTime } from '@shared/utils/formatTime';
 import { useMovieItem } from '@application/usecases/movieUseCases';
 import {
   useVideoProgress,
@@ -27,8 +26,6 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   const { mutateAsync: syncMutation } = useSyncProgressMutation();
 
   const playerRef = ref<InstanceType<typeof VideoPlayer> | null>(null);
-  const showToast = ref(false);
-  const toastDetail = ref('');
   const autoplayBlocked = ref(false);
 
   const startPosition = computed(() => progress.value.positionSeconds);
@@ -46,16 +43,6 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
 
   let lastKnownPosition = 0;
   let syncTimer: ReturnType<typeof setInterval> | null = null;
-  let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-  function flashToast(time: number): void {
-    toastDetail.value = formatTime(time);
-    showToast.value = true;
-    if (toastTimer) clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => {
-      showToast.value = false;
-    }, 2000);
-  }
 
   function stopSync(): void {
     if (syncTimer) {
@@ -71,9 +58,7 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   function scheduleSync(): void {
     syncTimer = setInterval(() => {
       if (lastKnownPosition > 0) {
-        syncProgress(lastKnownPosition)
-          .then(() => flashToast(lastKnownPosition))
-          .catch(handleSyncError);
+        syncProgress(lastKnownPosition).catch(handleSyncError);
       }
     }, SYNC_INTERVAL_MS);
   }
@@ -84,9 +69,7 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
 
   function handlePause(time: number): void {
     lastKnownPosition = time;
-    syncProgress(time)
-      .then(() => flashToast(time))
-      .catch(handleSyncError);
+    syncProgress(time).catch(handleSyncError);
   }
 
   function handleBeforeUnload(): void {
@@ -142,7 +125,6 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   onBeforeUnmount(() => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
     stopSync();
-    if (toastTimer) clearTimeout(toastTimer);
   });
 
   return {
@@ -156,8 +138,6 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
     paused,
     muted,
     progressPercent,
-    showToast,
-    toastDetail,
     autoplayBlocked,
     handleTimeUpdate,
     handlePause,

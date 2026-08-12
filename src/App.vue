@@ -1,26 +1,20 @@
 <script setup lang="ts">
 import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuth } from '@infra/state/authState';
-import { useUiState } from '@infra/state/uiState';
 import { useLocale } from '@infra/state/localeState';
 import type { AppLocale } from '@infra/i18n';
 import { initialsOf } from '@shared/utils/initials';
-
+import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 const auth = useAuth();
-const ui = useUiState();
-const router = useRouter();
 const route = useRoute();
 const { t } = useI18n();
 const locale = useLocale();
 
 const HIDDEN_CHROME_ROUTES = new Set(['login', 'profile', 'watch']);
 const showChrome = computed(
-  () =>
-    auth.isAuthenticated.value &&
-    ui.state.profileConfirmed &&
-    !HIDDEN_CHROME_ROUTES.has(String(route.name))
+  () => auth.isAuthenticated.value && !HIDDEN_CHROME_ROUTES.has(String(route.name))
 );
 
 const navItems = computed(() => [
@@ -36,7 +30,6 @@ const LOCALE_OPTIONS: Array<{ value: AppLocale; label: string }> = [
 
 function handleLogout(): void {
   auth.logout();
-  router.push({ name: 'login' });
 }
 </script>
 
@@ -83,6 +76,7 @@ function handleLogout(): void {
       <router-view />
     </main>
   </div>
+  <VueQueryDevtools />
 </template>
 
 <style scoped>

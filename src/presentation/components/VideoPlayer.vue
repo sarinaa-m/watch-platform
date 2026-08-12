@@ -202,6 +202,7 @@ defineExpose({
     class="focusable player"
     playsinline
     tabindex="0"
+    autoplay
     @timeupdate="handleTimeUpdate"
     @durationchange="handleDurationChange"
     @play="handlePlayState"

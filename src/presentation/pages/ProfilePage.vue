@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router';
-import { useAuth } from '@infra/state/authState';
-import { useUiState } from '@infra/state/uiState';
 import { initialsOf } from '@shared/utils/initials';
+import { useCurrentUserQuery } from '@application/usecases/authUseCases';
 
-const auth = useAuth();
-const ui = useUiState();
 const router = useRouter();
 const route = useRoute();
-
+const { data: currentUser } = useCurrentUserQuery();
 function select(): void {
-  ui.confirm();
   const redirect = route.query.redirect;
   router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
 }
@@ -24,8 +20,8 @@ function select(): void {
     </div>
 
     <button class="focusable profile-tile" tabindex="0" @click="select">
-      <span class="avatar">{{ initialsOf(auth.state.identifier) }}</span>
-      <span class="name">{{ auth.state.identifier }}</span>
+      <span class="avatar">{{ initialsOf(currentUser?.identifier) }}</span>
+      <span class="name">{{ currentUser?.identifier }}</span>
     </button>
   </div>
 </template>
