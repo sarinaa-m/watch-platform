@@ -28,7 +28,7 @@ const { playLabel } = usePlaybackStatusLabels(() => props.progressPercent);
     <FocusableGrid>
       <div class="hero-actions">
         <button class="focusable play-btn" tabindex="0" @click="$emit('play', movie.id)">
-          ▶ {{ playLabel }}
+          {{ playLabel }}
         </button>
         <button class="focusable info-btn" tabindex="0" @click="$emit('moreInfo', movie.id)">
           {{ $t('home.moreInfo') }}

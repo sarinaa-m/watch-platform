@@ -4,6 +4,7 @@ import VideoPlayer from '@presentation/components/VideoPlayer.vue';
 import WatchPageSkeleton from '@presentation/components/skeletons/WatchPageSkeleton.vue';
 import { useWatchPlayer } from '@presentation/composables/useWatchPlayer';
 import { formatTime } from '@shared/utils/formatTime';
+import { Pause, Play, RotateCcw, RotateCw } from 'lucide-vue-next';
 
 const props = defineProps<{
   id: string | number;
@@ -75,13 +76,25 @@ const {
         </div>
 
         <div class="controls">
-          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(-10)">⟲ 10</button>
-          <button class="focusable ctrl" tabindex="0" @click="togglePlay">
-            {{ paused ? `▶ ${$t('watch.play')}` : `❚❚ ${$t('watch.pause')}` }}
+          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(-10)">
+            <RotateCcw :size="14" /> <span>{{ 10 }}</span>
           </button>
-          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(10)">10 ⟳</button>
+          <button class="focusable ctrl" tabindex="0" @click="togglePlay">
+            <template v-if="paused"
+              ><Play :size="16" />
+              <span>
+                {{ $t('watch.play') }}
+              </span></template
+            >
+            <template v-else
+              ><Pause :size="16" /> <span>{{ $t('watch.pause') }}</span></template
+            >
+          </button>
+          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(10)">
+            <span>{{ 10 }}</span> <RotateCw :size="14" />
+          </button>
           <button class="focusable ctrl" tabindex="0" @click="playerRef?.toggleMute()">
-            {{ muted ? $t('watch.soundMuted') : $t('watch.soundOn') }}
+            <span>{{ muted ? $t('watch.soundMuted') : $t('watch.soundOn') }}</span>
           </button>
         </div>
       </div>
