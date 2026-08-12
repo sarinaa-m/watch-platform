@@ -1,13 +1,15 @@
 <script setup lang="ts">
 import Skeleton from './Skeleton.vue';
+
+withDefaults(defineProps<{ variant?: 'rail' | 'poster' }>(), { variant: 'rail' });
 </script>
 
 <template>
-  <div class="card" aria-hidden="true">
+  <div class="card" :class="`card--${variant}`" aria-hidden="true">
     <div class="thumb-wrap">
       <Skeleton width="100%" height="100%" radius="0" />
     </div>
-    <div class="meta">
+    <div v-if="variant !== 'poster'" class="meta">
       <Skeleton width="70%" height="1rem" />
       <Skeleton width="100%" height="0.8rem" />
       <Skeleton width="85%" height="0.8rem" />
@@ -31,6 +33,10 @@ import Skeleton from './Skeleton.vue';
 .thumb-wrap {
   aspect-ratio: 16 / 9;
   flex: 0 0 auto;
+}
+
+.card--poster .thumb-wrap {
+  aspect-ratio: 2 / 3;
 }
 
 .meta {

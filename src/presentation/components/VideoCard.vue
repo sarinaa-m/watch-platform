@@ -5,8 +5,9 @@ withDefaults(
   defineProps<{
     movie: Movie;
     progressPercent?: number;
+    variant?: 'rail' | 'poster';
   }>(),
-  { progressPercent: 0 }
+  { progressPercent: 0, variant: 'rail' }
 );
 defineEmits<{ select: [id: number] }>();
 </script>
@@ -14,17 +15,22 @@ defineEmits<{ select: [id: number] }>();
 <template>
   <button
     class="focusable card"
+    :class="`card--${variant}`"
     tabindex="-1"
     @click="$emit('select', movie.id)"
     @keydown.enter="$emit('select', movie.id)"
   >
     <div class="thumb-wrap">
       <img class="thumb" :src="movie.cover_image" :alt="movie.title" loading="lazy" />
+      <span class="hover-play" aria-hidden="true">▶</span>
       <div v-if="progressPercent > 0" class="progress-track">
         <div class="progress-fill" :style="{ width: progressPercent + '%' }" />
       </div>
+      <div v-if="variant === 'poster'" class="poster-overlay">
+        <h3 class="poster-title">{{ movie.title }}</h3>
+      </div>
     </div>
-    <div class="meta">
+    <div v-if="variant !== 'poster'" class="meta">
       <h3 class="card-title">{{ movie.title }}</h3>
       <p class="card-desc">{{ movie.description }}</p>
     </div>
@@ -36,7 +42,7 @@ defineEmits<{ select: [id: number] }>();
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  text-align: left;
+  text-align: start;
   background: rgba(255, 255, 255, 0.035);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -66,12 +72,59 @@ defineEmits<{ select: [id: number] }>();
   flex: 0 0 auto;
 }
 
+.card--poster .thumb-wrap {
+  aspect-ratio: 2 / 3;
+}
+
 .thumb {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top;
   display: block;
+}
+
+.card--poster .thumb {
+  object-position: center;
+}
+
+.hover-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  color: #fff;
+  background: rgba(11, 17, 28, 0.35);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+.card:hover .hover-play,
+.card:focus-visible .hover-play {
+  opacity: 1;
+}
+
+.poster-overlay {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  padding: var(--space-2) var(--space-3);
+  background: linear-gradient(to top, rgba(11, 17, 28, 0.92), rgba(11, 17, 28, 0));
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card:hover .poster-overlay,
+.card:focus-visible .poster-overlay {
+  opacity: 1;
+}
+
+.poster-title {
+  font-size: 0.9rem;
+  line-height: 1.3;
 }
 
 .progress-track {

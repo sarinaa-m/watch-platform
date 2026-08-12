@@ -5,8 +5,9 @@ withDefaults(
   defineProps<{
     title: string;
     hint?: string;
+    layout?: 'row' | 'grid';
   }>(),
-  { hint: '' }
+  { hint: '', layout: 'row' }
 );
 </script>
 
@@ -17,7 +18,7 @@ withDefaults(
       <span v-if="hint" class="rail-hint">{{ hint }}</span>
     </div>
     <FocusableGrid>
-      <div class="rail-row">
+      <div class="rail-row" :class="`rail-row--${layout}`">
         <slot />
       </div>
     </FocusableGrid>
@@ -37,8 +38,9 @@ withDefaults(
 }
 
 .rail-title {
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .rail-hint {
@@ -46,7 +48,7 @@ withDefaults(
   color: var(--color-text-muted);
 }
 
-.rail-row {
+.rail-row--row {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: var(--space-1);
@@ -55,8 +57,15 @@ withDefaults(
   padding: var(--space-2);
 }
 
-.rail-row > :deep(*) {
+.rail-row--row > :deep(*) {
   flex: 0 0 auto;
   width: 260px;
+}
+
+.rail-row--grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: var(--space-3);
+  padding: var(--space-2);
 }
 </style>

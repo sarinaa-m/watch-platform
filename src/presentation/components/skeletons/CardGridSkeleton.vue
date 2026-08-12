@@ -1,12 +1,15 @@
 <script setup lang="ts">
 import VideoCardSkeleton from './VideoCardSkeleton.vue';
 
-withDefaults(defineProps<{ count?: number }>(), { count: 8 });
+withDefaults(defineProps<{ count?: number; variant?: 'rail' | 'poster' }>(), {
+  count: 8,
+  variant: 'rail',
+});
 </script>
 
 <template>
-  <div class="grid" aria-hidden="true">
-    <VideoCardSkeleton v-for="n in count" :key="n" />
+  <div class="grid" :class="`grid--${variant}`" aria-hidden="true">
+    <VideoCardSkeleton v-for="n in count" :key="n" :variant="variant" />
   </div>
 </template>
 
@@ -15,5 +18,9 @@ withDefaults(defineProps<{ count?: number }>(), { count: 8 });
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: var(--space-4);
+}
+
+.grid--poster {
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 }
 </style>
