@@ -64,12 +64,6 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
     }
   }
 
-  /**
-   * A 4xx from /watch-progress can never be fixed by sending the identical
-   * body again — a rejected payload (400), an unknown video (404), or a dead
-   * session (401, already handled centrally). Retrying every 8s would just
-   * hammer the API, so the loop stops. Network errors keep retrying.
-   */
   function handleSyncError(err: unknown): void {
     if (isFatalApiError(err)) stopSync();
   }
@@ -96,9 +90,6 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   }
 
   function handleBeforeUnload(): void {
-    // Best-effort sync when the tab/window is closing. sendBeacon can't set an
-    // Authorization header, so this goes through the normal client with
-    // `keepalive` so the request outlives the page.
     if (lastKnownPosition > 0) {
       syncProgress(lastKnownPosition, true).catch(() => {});
     }
@@ -115,12 +106,9 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
       playerRef.value?.pause();
       return;
     }
-    // A click is a user gesture, so this normally satisfies the autoplay policy;
-    // if it still fails, fall back to the muted retry rather than failing silently.
     playerRef.value?.play().catch(() => playerRef.value?.attemptAutoplay());
   }
 
-  // Autoplay was blocked and playback continues muted; surface the unmute path.
   function handleBlocked(): void {
     autoplayBlocked.value = true;
   }
@@ -141,8 +129,6 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
     window.addEventListener('beforeunload', handleBeforeUnload);
   });
 
-  // The sync loop only makes sense once there is a video to report progress
-  // for, and it must restart when the route switches to another video.
   watch(
     movie,
     (loaded) => {

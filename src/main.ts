@@ -15,17 +15,11 @@ app.use(router);
 app.use(i18n);
 app.use(VueQueryPlugin, { queryClient });
 
-// Logout must drop every trace of the session that just ended — otherwise
-// the next login briefly renders the previous user's cached data.
 onLogout(() => {
-  // clear() drops all server state, including continue-watching.
   queryClient.clear();
   useUiState().reset();
 });
 
-// Central 401 handling: a 401 on a request that *carried* a token means the
-// session is dead (1-hour JWTs, no refresh token), so clear it and bounce to
-// /login. The http client does not fire this for the invalid-OTP 401.
 window.addEventListener('auth:unauthorized', () => {
   const auth = useAuth();
   auth.logout();

@@ -7,8 +7,6 @@ export function loadStoredSession(): Session | null {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Session;
-    // expiresAt is a client-side estimate (issuedAt + expires_in);
-    // the server is always the source of truth for actual expiry.
     if (parsed.expiresAt && Date.now() > parsed.expiresAt) return null;
     return parsed;
   } catch {

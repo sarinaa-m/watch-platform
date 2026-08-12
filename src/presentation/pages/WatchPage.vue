@@ -241,7 +241,6 @@ const {
   background: rgba(255, 255, 255, 0.16);
 }
 
-/* Top/bottom gradient scrims so controls stay legible over any frame */
 .watch::before,
 .watch::after {
   content: '';

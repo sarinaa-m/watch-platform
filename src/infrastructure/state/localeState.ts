@@ -25,8 +25,6 @@ function setLocale(locale: AppLocale): void {
   applyDocumentAttributes(locale);
 }
 
-// Sync the i18n instance and <html> attributes with the persisted locale
-// immediately, before any component mounts.
 setLocale(state.locale);
 
 export function useLocale() {

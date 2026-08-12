@@ -24,8 +24,6 @@ const duration = ref(0);
 const paused = ref(true);
 const muted = ref(false);
 let hls: Hls | null = null;
-// Tracks whether the resume seek has been applied for the current source, so a
-// startPosition that resolves after the manifest still gets honoured once.
 let seekApplied = false;
 
 function handleReady(): void {
@@ -47,7 +45,6 @@ function loadSource(): void {
     hls.attachMedia(video);
     hls.on(Hls.Events.MANIFEST_PARSED, handleReady);
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    // Native HLS support (Safari)
     video.src = props.src;
     video.addEventListener('loadedmetadata', handleReady, { once: true });
   }
@@ -92,8 +89,6 @@ function handleVolumeChange(): void {
   muted.value = video.muted;
 }
 
-// Keyboard shortcuts: space/enter play-pause, left/right seek 10s.
-// These work alongside the custom control chrome the parent renders.
 function handleKeydown(e: KeyboardEvent): void {
   const video = videoRef.value;
   if (!video) return;
@@ -101,8 +96,6 @@ function handleKeydown(e: KeyboardEvent): void {
     case ' ':
     case 'Enter':
       e.preventDefault();
-      // Same muted fallback as the on-screen play button, so a blocked
-      // keyboard start doesn't fail as a silent unhandled rejection.
       if (video.paused) void attemptAutoplay();
       else video.pause();
       break;
@@ -117,24 +110,12 @@ function handleKeydown(e: KeyboardEvent): void {
   }
 }
 
-/**
- * Returns the underlying play() promise so callers can react to a rejection.
- * Chrome/Safari reject with NotAllowedError when playback starts without a
- * user gesture, and a bare `video.play()` turns that into an unhandled
- * rejection — the "nothing happens, no error" symptom.
- */
 function play(): Promise<void> {
   const video = videoRef.value;
   if (!video) return Promise.resolve();
   return video.play() ?? Promise.resolve();
 }
 
-/**
- * Autoplay with sound is blocked unless the user has already interacted with
- * the document. Muted playback is always allowed, so on NotAllowedError we
- * retry muted and tell the parent, which can offer an unmute affordance —
- * that click is itself the gesture that authorizes audio.
- */
 async function attemptAutoplay(): Promise<void> {
   const video = videoRef.value;
   if (!video) return;
@@ -148,7 +129,6 @@ async function attemptAutoplay(): Promise<void> {
       await play();
       emit('blocked');
     } catch {
-      // Even muted playback was refused; leave the poster/controls visible.
       emit('blocked');
     }
   }
@@ -190,8 +170,6 @@ watch(
   }
 );
 
-// continue-watching resolves independently of the manifest, so startPosition is
-// often still 0 when the video becomes seekable. Apply it when it lands.
 watch(
   () => props.startPosition,
   (position) => {

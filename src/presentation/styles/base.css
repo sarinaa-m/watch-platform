@@ -1,6 +1,4 @@
 :root {
-  /* Color: dark navy ground with a single blue accent and a green
-     success/sync accent - matches the NX Academy design mockup. */
   --color-bg: #0b111c;
   --color-bg-elevated: #101827;
   --color-surface: #131c2e;
@@ -72,16 +70,12 @@ a {
   color: inherit;
 }
 
-/* Visible keyboard focus everywhere - required for TV/remote navigation */
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;
   border-radius: var(--radius-sm);
 }
 
-/* Elements marked focusable by our roving-tabindex grid also get a
-   focus ring even in browsers/TVs that don't support :focus-visible
-   well, since it's driven by tabindex + JS rather than mouse focus. */
 .focusable:focus {
   outline: 3px solid var(--color-focus);
   outline-offset: 3px;

@@ -35,7 +35,6 @@ const LOCALE_OPTIONS: Array<{ value: AppLocale; label: string }> = [
 ];
 
 function handleLogout(): void {
-  // logout() clears the UI gate and query cache via its registered hooks.
   auth.logout();
   router.push({ name: 'login' });
 }

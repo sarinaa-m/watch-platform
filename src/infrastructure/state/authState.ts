@@ -17,22 +17,10 @@ const state = reactive<AuthState>({
   expiresAt: session?.expiresAt ?? null,
 });
 
-/**
- * Presence of a token is not enough: the API issues 1-hour JWTs with no
- * refresh token, so a stored-but-expired token would pass a `!!token`
- * guard, mount the protected page, then 401 — a visible flash before the
- * redirect. Checking expiry here keeps the guard honest.
- */
 const isAuthenticated = computed(() => !!state.token && Date.now() < (state.expiresAt ?? 0));
 
-// The http client pulls the token from here rather than receiving it as an
-// argument through every use case.
 setTokenProvider(() => state.token);
 
-/**
- * Callbacks run on logout to drop user-scoped data (query cache, UI gate).
- * Registered from main.ts to keep this module free of app-wiring imports.
- */
 type LogoutHook = () => void;
 const logoutHooks: LogoutHook[] = [];
 
@@ -49,10 +37,6 @@ function clearExpiryTimer(): void {
   }
 }
 
-/**
- * Log out the moment the token dies rather than waiting for the user's next
- * click to fail. setTimeout is clamped to ~24 days, well above the 1h token.
- */
 function scheduleExpiry(): void {
   clearExpiryTimer();
   if (!state.expiresAt) return;
@@ -86,12 +70,9 @@ function logout(): void {
   state.identifier = null;
   state.expiresAt = null;
   persist();
-  // Drop everything scoped to the session that just ended, so the next
-  // login can't briefly render the previous user's data.
   logoutHooks.forEach((hook) => hook());
 }
 
-// A session restored from localStorage needs its expiry timer armed too.
 scheduleExpiry();
 
 export function useAuth() {
