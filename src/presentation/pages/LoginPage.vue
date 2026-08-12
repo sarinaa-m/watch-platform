@@ -25,11 +25,14 @@ const identifier = ref('');
 const otp = ref('');
 const loading = computed(() => isPending.value || verifyOtpPending.value);
 
-async function submitIdentifier(): Promise<void> {
+function submitIdentifier() {
   try {
-    const response = await requestOtpMutation(identifier.value);
-    otp.value = response.otp;
-    step.value = 'otp';
+    requestOtpMutation(identifier.value, {
+      onSuccess: (data) => {
+        otp.value = data.otp;
+        step.value = 'otp';
+      },
+    });
   } catch (err) {
     console.log(err);
   }
@@ -37,13 +40,19 @@ async function submitIdentifier(): Promise<void> {
 
 async function submitOtp(): Promise<void> {
   try {
-    const session = await verifyOtpMutation({
-      identifier: identifier.value,
-      otp: otp.value,
-    });
-    auth.setSession(session);
-    const redirect = route.query.redirect;
-    router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
+    verifyOtpMutation(
+      {
+        identifier: identifier.value,
+        otp: otp.value,
+      },
+      {
+        onSuccess: (data) => {
+          auth.setSession(data);
+          const redirect = route.query.redirect;
+          router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
+        },
+      }
+    );
   } catch (err) {
     console.log(err);
   }

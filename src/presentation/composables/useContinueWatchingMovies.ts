@@ -1,7 +1,8 @@
 import { computed } from 'vue';
-import { useMovieList } from '@application/usecases/movieUseCases';
 import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
-import type { Movie } from '@domain/entities/movie';
+import type { Movie, MovieListResponse } from '@domain/entities/movie';
+import { queryClient } from '@infra/query/queryClient';
+import { movieKeys } from '@shared/api/queryKeys';
 
 export interface ContinueWatchingMovie {
   movie: Movie;
@@ -10,8 +11,8 @@ export interface ContinueWatchingMovie {
 
 export function useContinueWatchingMovies() {
   const { data: continueWatching, isPending, error } = useContinueWatchingQuery();
-  const { data: movieList } = useMovieList();
-  const movies = computed(() => movieList.value?.data ?? []);
+  const movieListDate = queryClient.getQueryData<MovieListResponse>(movieKeys.list());
+  const movies = computed(() => movieListDate?.data ?? []);
 
   const items = computed<ContinueWatchingMovie[]>(() => {
     const entries = continueWatching.value?.data ?? [];

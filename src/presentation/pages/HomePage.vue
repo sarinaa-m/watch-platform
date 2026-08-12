@@ -10,7 +10,7 @@ import RailSkeleton from '@presentation/components/skeletons/RailSkeleton.vue';
 import CardGridSkeleton from '@presentation/components/skeletons/CardGridSkeleton.vue';
 import HeroBannerSkeleton from '@presentation/components/skeletons/HeroBannerSkeleton.vue';
 import { useMovieList } from '@application/usecases/movieUseCases';
-import { useContinueWatchingMovies } from '@application/usecases/continueWatchingUseCases';
+import { useContinueWatchingMovies } from '@presentation/composables/useContinueWatchingMovies';
 import { useSearch, filterMoviesByQuery } from '@infra/state/searchState';
 
 const router = useRouter();

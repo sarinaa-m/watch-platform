@@ -4,7 +4,7 @@ import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
 import QueryState from '@presentation/components/QueryState.vue';
 import CardGridSkeleton from '@presentation/components/skeletons/CardGridSkeleton.vue';
-import { useContinueWatchingMovies } from '@application/usecases/continueWatchingUseCases';
+import { useContinueWatchingMovies } from '@presentation/composables/useContinueWatchingMovies';
 
 const router = useRouter();
 const { items: continueWatchingMovies, isPending, error } = useContinueWatchingMovies();
