@@ -1,18 +1,5 @@
 import { envConfig } from '@config/env.config';
-
-export interface ApiError {
-  status: number;
-  error: string;
-  message: string;
-}
-
-export function isApiError(err: unknown): err is ApiError {
-  return typeof err === 'object' && err !== null && 'status' in err && 'error' in err;
-}
-
-export function isFatalApiError(err: unknown): boolean {
-  return isApiError(err) && err.status >= 400 && err.status < 500;
-}
+import type { ApiError } from '@shared/api/apiError';
 
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT';
@@ -26,6 +13,12 @@ let tokenProvider: () => string | null = () => null;
 
 export function setTokenProvider(provider: () => string | null): void {
   tokenProvider = provider;
+}
+
+let unauthorizedHandler: () => void = () => {};
+
+export function setUnauthorizedHandler(handler: () => void): void {
+  unauthorizedHandler = handler;
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -60,7 +53,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     if (response.status === 401 && token) {
-      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      unauthorizedHandler();
     }
     throw {
       status: response.status,

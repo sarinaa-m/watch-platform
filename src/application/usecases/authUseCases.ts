@@ -1,11 +1,13 @@
-import type { Session } from '@domain/entities/session';
-import { authorityRepository } from '@infra/adapters/authRepositoryImpl';
+import { computed } from 'vue';
+import type { Session } from '@domain/session';
+import { authRepository } from '@infra/adapters/authRepositoryImpl';
+import { useAuth } from '@infra/state/authState';
 import { authKeys } from '@shared/api/queryKeys';
 import { useMutation, useQuery } from '@tanstack/vue-query';
 
 export const useRequestOtpMutation = () => {
   return useMutation({
-    mutationFn: (identifier: string) => authorityRepository.requestOtp(identifier),
+    mutationFn: (identifier: string) => authRepository.requestOtp(identifier),
   });
 };
 
@@ -18,7 +20,7 @@ export const useVerifyOtpMutation = () => {
       identifier: string;
       otp: string;
     }): Promise<Session> => {
-      const res = await authorityRepository.verifyOtp(identifier, otp);
+      const res = await authRepository.verifyOtp(identifier, otp);
       return {
         token: res.access_token,
         identifier,
@@ -29,10 +31,10 @@ export const useVerifyOtpMutation = () => {
 };
 
 export const useCurrentUserQuery = () => {
-  // const auth = useAuth();
+  const auth = useAuth();
   return useQuery({
     queryKey: authKeys.currentUser(),
-    queryFn: () => authorityRepository.getCurrentUser(),
-    // enabled: computed(() => auth.isAuthenticated.value),
+    queryFn: () => authRepository.getCurrentUser(),
+    enabled: computed(() => auth.isAuthenticated.value),
   });
 };

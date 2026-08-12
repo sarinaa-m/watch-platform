@@ -1,5 +1,5 @@
 import { reactive, readonly } from 'vue';
-import type { Movie } from '@domain/entities/movie';
+import type { Movie } from '@domain/movie';
 
 const state = reactive<{ query: string }>({ query: '' });
 

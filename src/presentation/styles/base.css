@@ -1,14 +1,26 @@
 :root {
-  --color-bg: #0b111c;
-  --color-bg-elevated: #101827;
-  --color-surface: #131c2e;
-  --color-accent: #2a6fdb;
-  --color-accent-strong: #5a7fff;
-  --color-success: #1f8a5b;
-  --color-text: #f9fafb;
-  --color-text-muted: #9ca3af;
-  --color-border: rgba(255, 255, 255, 0.09);
-  --color-focus: #7e9bff;
+  --color-bg: #17302a;
+  --color-bg-rgb: 23, 48, 42;
+  --color-bg-highlight: #32675a;
+  --color-bg-shadow: #0f1f1b;
+  --color-bg-elevated: #1f4139;
+  --color-surface: #285348;
+  --color-accent: #14b8a6;
+  --color-accent-rgb: 20, 184, 166;
+  --color-accent-strong: #2dd4bf;
+  --color-accent-strong-rgb: 45, 212, 191;
+  --color-accent-deep: #0d9488;
+  --color-success: #4ade80;
+  --color-error: #f87171;
+  --color-text: #f5faf8;
+  --color-text-rgb: 245, 250, 248;
+  --color-text-muted: #9cb8ac;
+  --color-text-muted-rgb: 156, 184, 172;
+  --color-text-secondary: #cfe3db;
+  --color-border: rgba(var(--color-text-muted-rgb), 0.22);
+  --color-focus: #34d9c4;
+  --color-shadow-rgb: 0, 0, 0;
+  --color-black: #000;
 
   --font-display: 'Vazirmatn', system-ui, sans-serif;
   --font-body: 'Vazirmatn', system-ui, sans-serif;
@@ -31,7 +43,11 @@
   --poster-min-width: 170px;
 }
 
-* {
+*,
+*::after,
+*::before {
+  padding: 0;
+  margin: 0;
   box-sizing: border-box;
 }
 
@@ -39,7 +55,12 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(120% 80% at 85% -10%, #16233c 0%, var(--color-bg) 55%, #080d15 100%);
+  background: radial-gradient(
+    120% 80% at 85% -10%,
+    var(--color-bg-highlight) 0%,
+    var(--color-bg) 55%,
+    var(--color-bg-shadow) 100%
+  );
   color: var(--color-text);
   font-family: var(--font-body);
   min-height: 100vh;

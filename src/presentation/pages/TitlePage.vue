@@ -72,7 +72,7 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 
 .back-btn {
   align-self: flex-start;
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(var(--color-text-rgb), 0.08);
   border: 1px solid var(--color-border);
   color: var(--color-text-muted);
   padding: 8px 16px;
@@ -92,7 +92,7 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 }
 
 .desc {
-  color: #d1d5db;
+  color: var(--color-text-secondary);
   line-height: 1.75;
 }
 
@@ -104,13 +104,13 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
   font-weight: 600;
   cursor: pointer;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text);
   border: none;
 }
 
 .play-btn:hover,
 .play-btn:focus-visible {
-  background: #1e5ab8;
+  background: var(--color-accent-deep);
 }
 
 .section-title {
@@ -126,14 +126,14 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
   align-items: center;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(var(--color-text-rgb), 0.035);
   border: 1px solid var(--color-border);
   cursor: pointer;
 }
 
 .episode-row:hover,
 .episode-row:focus-visible {
-  background: rgba(42, 111, 219, 0.12);
+  background: rgba(var(--color-accent-rgb), 0.12);
 }
 
 .episode-num {

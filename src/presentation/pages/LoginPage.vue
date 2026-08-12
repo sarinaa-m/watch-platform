@@ -1,67 +1,17 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { useAuth } from '@infra/state/authState';
-import { useRequestOtpMutation, useVerifyOtpMutation } from '@application/usecases/authUseCases';
-
-const auth = useAuth();
-const router = useRouter();
-const route = useRoute();
+import { useLoginFlow } from '@presentation/composables/useLoginFlow';
 
 const {
-  mutateAsync: requestOtpMutation,
-  isPending,
-  error: requestOtpError,
-} = useRequestOtpMutation();
-
-const {
-  mutateAsync: verifyOtpMutation,
-  isPending: verifyOtpPending,
-  error: verifyOtpError,
-} = useVerifyOtpMutation();
-
-const step = ref<'identifier' | 'otp'>('identifier');
-const identifier = ref('');
-const otp = ref('');
-const loading = computed(() => isPending.value || verifyOtpPending.value);
-
-function submitIdentifier() {
-  try {
-    requestOtpMutation(identifier.value, {
-      onSuccess: (data) => {
-        otp.value = data.otp;
-        step.value = 'otp';
-      },
-    });
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-async function submitOtp(): Promise<void> {
-  try {
-    verifyOtpMutation(
-      {
-        identifier: identifier.value,
-        otp: otp.value,
-      },
-      {
-        onSuccess: (data) => {
-          auth.setSession(data);
-          const redirect = route.query.redirect;
-          router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
-        },
-      }
-    );
-  } catch (err) {
-    console.log(err);
-  }
-}
-
-function backToIdentifier(): void {
-  step.value = 'identifier';
-  otp.value = '';
-}
+  step,
+  identifier,
+  otp,
+  loading,
+  requestOtpError,
+  verifyOtpError,
+  submitIdentifier,
+  submitOtp,
+  backToIdentifier,
+} = useLoginFlow();
 </script>
 
 <template>
@@ -134,12 +84,12 @@ function backToIdentifier(): void {
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--color-text-rgb), 0.04);
   backdrop-filter: blur(14px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 30px 60px -20px rgba(var(--color-shadow-rgb), 0.6);
 }
 
 .title {
@@ -188,13 +138,13 @@ function backToIdentifier(): void {
 }
 
 .error {
-  color: #f87171;
+  color: var(--color-error);
   font-size: 0.9rem;
 }
 
 .primary-btn {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text);
   border: none;
   padding: 12px 16px;
   border-radius: var(--radius-sm);

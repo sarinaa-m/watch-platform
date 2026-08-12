@@ -70,16 +70,16 @@ function select(): void {
   justify-content: center;
   font-size: 2rem;
   font-weight: 700;
-  color: #fff;
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.45);
+  color: var(--color-text);
+  box-shadow: 0 16px 32px rgba(var(--color-shadow-rgb), 0.45);
   transition: box-shadow 0.15s ease;
 }
 
 .profile-tile:hover .avatar,
 .profile-tile:focus-visible .avatar {
   box-shadow:
-    0 16px 32px rgba(0, 0, 0, 0.45),
-    0 0 0 4px rgba(90, 127, 255, 0.35);
+    0 16px 32px rgba(var(--color-shadow-rgb), 0.45),
+    0 0 0 4px rgba(var(--color-accent-strong-rgb), 0.35);
 }
 
 .name {

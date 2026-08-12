@@ -1,8 +1,7 @@
 import { httpClient } from '@infra/api/httpClient';
-import type { AuthRepository } from '@domain/ports';
-import type { VerifyOtpResponse, GetOtpResponse } from '@domain/entities';
+import type { VerifyOtpResponse, GetOtpResponse } from '@domain/session';
 
-export const createAuthRepository = (): AuthRepository => ({
+export const createAuthRepository = () => ({
   async requestOtp(identifier: string): Promise<GetOtpResponse> {
     return httpClient.post<GetOtpResponse>('/auth/request-otp', { identifier }, { auth: false });
   },
@@ -18,4 +17,4 @@ export const createAuthRepository = (): AuthRepository => ({
   },
 });
 
-export const authorityRepository = createAuthRepository();
+export const authRepository = createAuthRepository();

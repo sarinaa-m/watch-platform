@@ -63,7 +63,7 @@ import Skeleton from './Skeleton.vue';
   align-items: center;
   padding: var(--space-3);
   border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(var(--color-text-rgb), 0.035);
   border: 1px solid var(--color-border);
 }
 

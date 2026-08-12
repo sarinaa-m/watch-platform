@@ -1,8 +1,7 @@
 import { httpClient } from '@infra/api/httpClient';
-import type { Movie, MovieListResponse } from '@domain/entities/movie';
-import type { MovieRepository } from '@domain/ports/out';
+import type { Movie, MovieListResponse } from '@domain/movie';
 
-export const createMovieListRepository = (): MovieRepository => ({
+export const createMovieListRepository = () => ({
   async getMovies(): Promise<MovieListResponse> {
     return httpClient.get<MovieListResponse>('/movies');
   },

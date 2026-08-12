@@ -15,7 +15,7 @@ import Skeleton from './Skeleton.vue';
 .watch-skeleton {
   position: absolute;
   inset: 0;
-  background: #000;
+  background: var(--color-black);
 }
 
 .play-hint {

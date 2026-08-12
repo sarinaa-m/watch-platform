@@ -5,7 +5,7 @@ import App from './App.vue';
 import { router } from '@infra/router';
 import { i18n } from '@infra/i18n';
 import '@infra/state/localeState';
-import { useAuth, onLogout } from '@infra/state/authState';
+import { onLogout } from '@infra/state/authState';
 import { queryClient } from '@infra/query/queryClient';
 import '@presentation/styles/base.css';
 
@@ -19,10 +19,6 @@ onLogout(() => {
   if (router.currentRoute.value.name !== 'login') {
     router.push({ name: 'login' });
   }
-});
-
-window.addEventListener('auth:unauthorized', () => {
-  useAuth().logout();
 });
 
 app.mount('#app');

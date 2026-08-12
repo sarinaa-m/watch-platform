@@ -8,7 +8,7 @@ import {
   type MaybeRefOrGetter,
 } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
-import { isFatalApiError } from '@infra/api/httpClient';
+import { isFatalApiError } from '@shared/api/apiError';
 import { useMovieItem } from '@application/usecases/movieUseCases';
 import { useSyncProgressMutation } from '@application/usecases/watchProgressUseCases';
 import { useVideoProgress } from '@presentation/composables/useVideoProgress';

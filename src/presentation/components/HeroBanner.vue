@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Movie } from '@domain/entities/movie';
+import type { Movie } from '@domain/movie';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
 import MediaBackdrop from '@presentation/components/MediaBackdrop.vue';
 import ProgressBar from '@presentation/components/ProgressBar.vue';
@@ -54,7 +54,7 @@ const { playLabel } = usePlaybackStatusLabels(() => props.progressPercent);
 }
 
 .desc {
-  color: #d1d5db;
+  color: var(--color-text-secondary);
   line-height: 1.7;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -77,13 +77,13 @@ const { playLabel } = usePlaybackStatusLabels(() => props.progressPercent);
   font-weight: 700;
   cursor: pointer;
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text);
   border: none;
 }
 
 .play-btn:hover,
 .play-btn:focus-visible {
-  background: #1e5ab8;
+  background: var(--color-accent-deep);
 }
 
 .info-btn {
@@ -92,14 +92,14 @@ const { playLabel } = usePlaybackStatusLabels(() => props.progressPercent);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  background: rgba(249, 250, 251, 0.14);
-  border: 1px solid rgba(249, 250, 251, 0.24);
+  background: rgba(var(--color-text-rgb), 0.14);
+  border: 1px solid rgba(var(--color-text-rgb), 0.24);
   color: var(--color-text);
 }
 
 .info-btn:hover,
 .info-btn:focus-visible {
-  background: rgba(249, 250, 251, 0.24);
+  background: rgba(var(--color-text-rgb), 0.24);
 }
 
 @media (max-width: 640px) {
