@@ -26,36 +26,27 @@ const otp = ref('');
 const loading = computed(() => isPending.value || verifyOtpPending.value);
 
 function submitIdentifier() {
-  try {
-    requestOtpMutation(identifier.value, {
-      onSuccess: (data) => {
-        otp.value = data.otp;
-        step.value = 'otp';
-      },
-    });
-  } catch (err) {
-    console.log(err);
-  }
+  requestOtpMutation(identifier.value, {
+    onSuccess: () => {
+      step.value = 'otp';
+    },
+  });
 }
 
-async function submitOtp(): Promise<void> {
-  try {
-    verifyOtpMutation(
-      {
-        identifier: identifier.value,
-        otp: otp.value,
+function submitOtp(): void {
+  verifyOtpMutation(
+    {
+      identifier: identifier.value,
+      otp: otp.value,
+    },
+    {
+      onSuccess: (data) => {
+        auth.setSession(data);
+        const redirect = route.query.redirect;
+        router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
       },
-      {
-        onSuccess: (data) => {
-          auth.setSession(data);
-          const redirect = route.query.redirect;
-          router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
-        },
-      }
-    );
-  } catch (err) {
-    console.log(err);
-  }
+    }
+  );
 }
 
 function backToIdentifier(): void {
