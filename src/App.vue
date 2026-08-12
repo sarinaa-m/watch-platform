@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuth } from '@infra/state/authState';
 import { useLocale } from '@infra/state/localeState';
-import { useSearch } from '@infra/state/searchState';
 import type { AppLocale } from '@infra/i18n';
 import { initialsOf } from '@shared/utils/initials';
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 import SearchBox from '@presentation/components/SearchBox.vue';
+import { useTopbarSearch } from '@presentation/composables/useTopbarSearch';
 const auth = useAuth();
 const route = useRoute();
-const router = useRouter();
 const { t } = useI18n();
 const locale = useLocale();
 
@@ -27,15 +26,7 @@ const LOCALE_OPTIONS: Array<{ value: AppLocale; label: string }> = [
   { value: 'fa', label: 'FA' },
 ];
 
-const search = useSearch();
-const searchQuery = ref(search.state.query);
-
-watch(searchQuery, (value) => {
-  search.setQuery(value);
-  if (value.trim() && route.name !== 'home') {
-    router.push({ name: 'home' });
-  }
-});
+const searchQuery = useTopbarSearch();
 
 function handleLogout(): void {
   auth.logout();
