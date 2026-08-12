@@ -16,11 +16,11 @@ withDefaults(defineProps<{ count?: number; variant?: 'rail' | 'poster' }>(), {
 <style scoped>
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--rail-item-width), 1fr));
   gap: var(--space-4);
 }
 
 .grid--poster {
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--poster-min-width), 1fr));
 }
 </style>

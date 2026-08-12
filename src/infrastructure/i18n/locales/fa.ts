@@ -54,9 +54,6 @@ export default {
     soundMuted: 'صدا: بی‌صدا',
     soundOn: 'صدا: روشن',
   },
-  syncToast: {
-    title: 'وضعیت تماشا ذخیره شد',
-  },
   playbackStatus: {
     watched: '✓ دیده‌شده',
     resumeFrom: 'ادامه از {percent}٪',

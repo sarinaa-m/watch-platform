@@ -8,16 +8,14 @@ import { useSearch } from '@infra/state/searchState';
 import type { AppLocale } from '@infra/i18n';
 import { initialsOf } from '@shared/utils/initials';
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
+import SearchBox from '@presentation/components/SearchBox.vue';
 const auth = useAuth();
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18n();
 const locale = useLocale();
 
-const HIDDEN_CHROME_ROUTES = new Set(['login', 'profile', 'watch']);
-const showChrome = computed(
-  () => auth.isAuthenticated.value && !HIDDEN_CHROME_ROUTES.has(String(route.name))
-);
+const showChrome = computed(() => auth.isAuthenticated.value && !route.meta.hideChrome);
 
 const navItems = computed(() => [
   { name: 'home', label: t('app.nav.home') },
@@ -61,14 +59,7 @@ function handleLogout(): void {
         </router-link>
       </nav>
 
-      <form class="search-box" @submit.prevent>
-        <input
-          v-model="searchQuery"
-          class="focusable search-input"
-          type="text"
-          :placeholder="t('search.placeholder')"
-        />
-      </form>
+      <SearchBox v-model="searchQuery" />
 
       <div class="topbar-right">
         <div class="locale-switch">
@@ -157,30 +148,6 @@ function handleLogout(): void {
 .pill.active {
   color: var(--color-text);
   border-color: var(--color-accent-strong);
-}
-
-.search-box {
-  flex: 0 1 260px;
-  min-width: 140px;
-}
-
-.search-input {
-  width: 100%;
-  padding: 8px 14px;
-  font-size: 0.9rem;
-  color: var(--color-text);
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  outline: none;
-}
-
-.search-input::placeholder {
-  color: var(--color-text-muted);
-}
-
-.search-input:focus-visible {
-  border-color: var(--color-focus);
 }
 
 .topbar-right {

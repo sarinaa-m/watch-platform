@@ -31,12 +31,12 @@ withDefaults(defineProps<{ variant?: 'rail' | 'poster' }>(), { variant: 'rail' }
 }
 
 .thumb-wrap {
-  aspect-ratio: 16 / 9;
+  aspect-ratio: var(--card-aspect-rail);
   flex: 0 0 auto;
 }
 
 .card--poster .thumb-wrap {
-  aspect-ratio: 2 / 3;
+  aspect-ratio: var(--card-aspect-poster);
 }
 
 .meta {

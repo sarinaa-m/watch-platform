@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
 import type { Movie } from '@domain/entities/movie';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
+import MediaBackdrop from '@presentation/components/MediaBackdrop.vue';
+import ProgressBar from '@presentation/components/ProgressBar.vue';
 import { usePlaybackStatusLabels } from '@presentation/composables/usePlaybackStatusLabels';
 
 const props = withDefaults(
@@ -13,73 +14,31 @@ const props = withDefaults(
   { progressPercent: 0, isContinueWatching: false }
 );
 
-const router = useRouter();
+defineEmits<{ play: [id: number]; moreInfo: [id: number] }>();
+
 const { playLabel } = usePlaybackStatusLabels(() => props.progressPercent);
-
-function play(): void {
-  router.push({ name: 'watch', params: { id: props.movie.id } });
-}
-
-function moreInfo(): void {
-  router.push({ name: 'title', params: { id: props.movie.id } });
-}
 </script>
 
 <template>
-  <section class="hero" :style="{ backgroundImage: `url(${movie.cover_image})` }">
-    <div class="scrim" />
-    <div class="hero-content">
-      <span v-if="isContinueWatching" class="eyebrow">{{ $t('home.continueWatchingTitle') }}</span>
-      <h1 class="title">{{ movie.title }}</h1>
-      <p class="desc">{{ movie.description }}</p>
-      <div v-if="progressPercent > 0" class="progress-track">
-        <div class="progress-fill" :style="{ width: Math.min(100, progressPercent) + '%' }" />
+  <MediaBackdrop :image="movie.cover_image" size="lg">
+    <span v-if="isContinueWatching" class="eyebrow">{{ $t('home.continueWatchingTitle') }}</span>
+    <h1 class="title">{{ movie.title }}</h1>
+    <p class="desc">{{ movie.description }}</p>
+    <ProgressBar :percent="progressPercent" />
+    <FocusableGrid>
+      <div class="hero-actions">
+        <button class="focusable play-btn" tabindex="0" @click="$emit('play', movie.id)">
+          ▶ {{ playLabel }}
+        </button>
+        <button class="focusable info-btn" tabindex="0" @click="$emit('moreInfo', movie.id)">
+          {{ $t('home.moreInfo') }}
+        </button>
       </div>
-      <FocusableGrid>
-        <div class="hero-actions">
-          <button class="focusable play-btn" tabindex="0" @click="play">▶ {{ playLabel }}</button>
-          <button class="focusable info-btn" tabindex="0" @click="moreInfo">
-            {{ $t('home.moreInfo') }}
-          </button>
-        </div>
-      </FocusableGrid>
-    </div>
-  </section>
+    </FocusableGrid>
+  </MediaBackdrop>
 </template>
 
 <style scoped>
-.hero {
-  position: relative;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  min-height: 440px;
-  display: flex;
-  align-items: flex-end;
-  background-size: cover;
-  background-position: center;
-  margin-bottom: var(--space-6);
-}
-
-.scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    #0b111c 6%,
-    rgba(11, 17, 28, 0.78) 45%,
-    rgba(11, 17, 28, 0.3) 100%
-  );
-}
-
-.hero-content {
-  position: relative;
-  padding: var(--space-5);
-  display: grid;
-  gap: var(--space-3);
-  max-width: 640px;
-}
-
 .eyebrow {
   font-size: 0.8rem;
   font-weight: 700;
@@ -102,20 +61,6 @@ function moreInfo(): void {
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-.progress-track {
-  width: 100%;
-  max-width: 320px;
-  height: 4px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  overflow: hidden;
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
 }
 
 .hero-actions {
@@ -158,10 +103,6 @@ function moreInfo(): void {
 }
 
 @media (max-width: 640px) {
-  .hero {
-    min-height: 340px;
-  }
-
   .title {
     font-size: 1.7rem;
   }

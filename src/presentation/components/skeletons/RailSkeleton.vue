@@ -31,7 +31,7 @@ withDefaults(defineProps<{ count?: number }>(), { count: 5 });
 
 .rail-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(var(--rail-columns), 1fr);
   gap: var(--space-1);
   row-gap: var(--space-3);
   padding: var(--space-2);

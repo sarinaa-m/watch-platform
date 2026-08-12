@@ -11,7 +11,7 @@ import CardGridSkeleton from '@presentation/components/skeletons/CardGridSkeleto
 import HeroBannerSkeleton from '@presentation/components/skeletons/HeroBannerSkeleton.vue';
 import { useMovieList } from '@application/usecases/movieUseCases';
 import { useContinueWatchingMovies } from '@application/usecases/continueWatchingUseCases';
-import { useSearch } from '@infra/state/searchState';
+import { useSearch, filterMoviesByQuery } from '@infra/state/searchState';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -25,11 +25,9 @@ const featuredProgress = computed(() => progressFor(featured.value?.id));
 const isFeaturedContinueWatching = computed(() => continueWatchingMovies.value.length > 0);
 
 const searchQuery = computed(() => search.state.query.trim());
-const filteredCatalog = computed(() => {
-  const q = searchQuery.value.toLocaleLowerCase();
-  if (!q) return restOfCatalog.value;
-  return restOfCatalog.value.filter((movie) => movie.title.toLocaleLowerCase().includes(q));
-});
+const filteredCatalog = computed(() =>
+  filterMoviesByQuery(restOfCatalog.value, search.state.query)
+);
 const myListHint = computed(() =>
   searchQuery.value
     ? t('search.resultsCount', { count: filteredCatalog.value.length })
@@ -60,6 +58,8 @@ function playMovie(id: number | undefined): void {
         :movie="featured"
         :progress-percent="featuredProgress"
         :is-continue-watching="isFeaturedContinueWatching"
+        @play="playMovie"
+        @more-info="openTitle"
       />
       <p v-else class="status">{{ $t('home.emptyCatalog') }}</p>
 

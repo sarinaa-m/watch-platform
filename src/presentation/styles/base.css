@@ -23,6 +23,12 @@
   --space-4: 24px;
   --space-5: 40px;
   --space-6: 64px;
+
+  --card-aspect-rail: 16 / 9;
+  --card-aspect-poster: 2 / 3;
+  --rail-columns: 5;
+  --rail-item-width: 260px;
+  --poster-min-width: 170px;
 }
 
 * {

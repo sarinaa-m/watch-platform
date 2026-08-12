@@ -131,8 +131,7 @@ const {
 .top-bar {
   position: absolute;
   top: var(--space-4);
-  right: var(--space-4);
-  left: var(--space-4);
+  inset-inline: var(--space-4);
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
@@ -169,8 +168,7 @@ const {
 .bottom-bar {
   position: absolute;
   bottom: var(--space-4);
-  right: var(--space-4);
-  left: var(--space-4);
+  inset-inline: var(--space-4);
   z-index: 2;
   display: grid;
   gap: var(--space-3);
@@ -241,8 +239,7 @@ const {
 .watch::after {
   content: '';
   position: absolute;
-  right: 0;
-  left: 0;
+  inset-inline: 0;
   z-index: 1;
   pointer-events: none;
 }

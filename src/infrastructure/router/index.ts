@@ -7,12 +7,13 @@ const routes: RouteRecordRaw[] = [
     path: PATHS.login.path,
     name: PATHS.login.name,
     component: () => import('@presentation/pages/LoginPage.vue'),
-    meta: { public: true },
+    meta: { public: true, hideChrome: true },
   },
   {
     path: PATHS.profile.path,
     name: PATHS.profile.name,
     component: () => import('@presentation/pages/ProfilePage.vue'),
+    meta: { hideChrome: true },
   },
   {
     path: PATHS.home.path,
@@ -35,6 +36,7 @@ const routes: RouteRecordRaw[] = [
     name: PATHS.watch.name,
     component: () => import('@presentation/pages/WatchPage.vue'),
     props: true,
+    meta: { hideChrome: true },
   },
 ];
 

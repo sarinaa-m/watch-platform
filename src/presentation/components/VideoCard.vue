@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { Movie } from '@domain/entities/movie';
+import ProgressBar from '@presentation/components/ProgressBar.vue';
 
 withDefaults(
   defineProps<{
@@ -23,8 +24,8 @@ defineEmits<{ select: [id: number] }>();
     <div class="thumb-wrap">
       <img class="thumb" :src="movie.cover_image" :alt="movie.title" loading="lazy" />
       <span class="hover-play" aria-hidden="true">▶</span>
-      <div v-if="progressPercent > 0" class="progress-track">
-        <div class="progress-fill" :style="{ width: progressPercent + '%' }" />
+      <div class="thumb-progress">
+        <ProgressBar :percent="progressPercent" :rounded="false" track-color="rgba(0, 0, 0, 0.4)" />
       </div>
       <div v-if="variant === 'poster'" class="poster-overlay">
         <h3 class="poster-title">{{ movie.title }}</h3>
@@ -67,13 +68,13 @@ defineEmits<{ select: [id: number] }>();
 
 .thumb-wrap {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: var(--card-aspect-rail);
   background: var(--color-bg-elevated);
   flex: 0 0 auto;
 }
 
 .card--poster .thumb-wrap {
-  aspect-ratio: 2 / 3;
+  aspect-ratio: var(--card-aspect-poster);
 }
 
 .thumb {
@@ -127,18 +128,10 @@ defineEmits<{ select: [id: number] }>();
   line-height: 1.3;
 }
 
-.progress-track {
+.thumb-progress {
   position: absolute;
+  inset-inline: 0;
   bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: rgba(0, 0, 0, 0.4);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
 }
 
 .meta {

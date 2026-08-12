@@ -54,9 +54,6 @@ export default {
     soundMuted: 'Sound: Muted',
     soundOn: 'Sound: On',
   },
-  syncToast: {
-    title: 'Watch status saved',
-  },
   playbackStatus: {
     watched: '✓ Watched',
     resumeFrom: 'Resume from {percent}%',

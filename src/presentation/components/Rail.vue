@@ -50,7 +50,7 @@ withDefaults(
 
 .rail-row--row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(var(--rail-columns), 1fr);
   gap: var(--space-1);
   row-gap: var(--space-3);
   overflow-x: auto;
@@ -59,12 +59,12 @@ withDefaults(
 
 .rail-row--row > :deep(*) {
   flex: 0 0 auto;
-  width: 260px;
+  width: var(--rail-item-width);
 }
 
 .rail-row--grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--poster-min-width), 1fr));
   gap: var(--space-3);
   padding: var(--space-2);
 }

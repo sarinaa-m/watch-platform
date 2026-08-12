@@ -4,6 +4,8 @@ import { useRouter } from 'vue-router';
 import { useMovieItem } from '@application/usecases/movieUseCases';
 import { useVideoProgress } from '@application/usecases/watchProgressUseCases';
 import { usePlaybackStatusLabels } from '@presentation/composables/usePlaybackStatusLabels';
+import MediaBackdrop from '@presentation/components/MediaBackdrop.vue';
+import ProgressBar from '@presentation/components/ProgressBar.vue';
 import QueryState from '@presentation/components/QueryState.vue';
 import TitlePageSkeleton from '@presentation/components/skeletons/TitlePageSkeleton.vue';
 
@@ -33,25 +35,19 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
       </template>
 
       <template v-if="movie">
-        <div class="hero" :style="{ backgroundImage: `url(${movie.cover_image})` }">
-          <div class="scrim" />
-          <div class="hero-content">
-            <h1 class="title">{{ movie.title }}</h1>
-            <p class="desc">{{ movie.description }}</p>
-            <button class="focusable play-btn" tabindex="0" @click="play">{{ playLabel }}</button>
-          </div>
-        </div>
+        <MediaBackdrop :image="movie.cover_image" size="md">
+          <h1 class="title">{{ movie.title }}</h1>
+          <p class="desc">{{ movie.description }}</p>
+          <button class="focusable play-btn" tabindex="0" @click="play">{{ playLabel }}</button>
+        </MediaBackdrop>
 
         <div class="episodes">
           <h2 class="section-title">{{ $t('title.episodes') }}</h2>
           <div class="episode-row focusable" tabindex="0" @click="play" @keydown.enter="play">
             <div class="episode-num">1</div>
             <div class="episode-thumb" :style="{ backgroundImage: `url(${movie.cover_image})` }">
-              <div class="progress-track">
-                <div
-                  class="progress-fill"
-                  :style="{ width: Math.min(100, progressPercent) + '%' }"
-                />
+              <div class="thumb-progress">
+                <ProgressBar :percent="progressPercent" :rounded="false" />
               </div>
             </div>
             <div class="episode-meta">
@@ -88,37 +84,6 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 .back-btn:focus-visible {
   color: var(--color-text);
   border-color: var(--color-accent);
-}
-
-.hero {
-  position: relative;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  border: 1px solid var(--color-border);
-  min-height: 300px;
-  display: flex;
-  align-items: flex-end;
-  background-size: cover;
-  background-position: center;
-}
-
-.scrim {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to top,
-    #0b111c 5%,
-    rgba(11, 17, 28, 0.75) 45%,
-    rgba(11, 17, 28, 0.35) 100%
-  );
-}
-
-.hero-content {
-  position: relative;
-  padding: var(--space-5);
-  display: grid;
-  gap: var(--space-3);
-  max-width: 640px;
 }
 
 .title {
@@ -187,18 +152,10 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
   background-position: center;
 }
 
-.progress-track {
+.thumb-progress {
   position: absolute;
+  inset-inline: 0;
   bottom: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.18);
-}
-
-.progress-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-strong));
 }
 
 .episode-meta {
