@@ -25,8 +25,8 @@ function playMovie(id: number | undefined): void {
     <QueryState :pending="isPending" :error="error">
       <Rail
         v-if="continueWatchingMovies.length"
-        title="Continue Watching"
-        hint="Saved on the server"
+        :title="$t('home.continueWatchingTitle')"
+        :hint="$t('home.continueWatchingHint')"
       >
         <VideoCard
           v-for="item in continueWatchingMovies"
@@ -37,7 +37,7 @@ function playMovie(id: number | undefined): void {
         />
       </Rail>
 
-      <Rail title="All Videos" hint="Full course list">
+      <Rail :title="$t('home.allVideosTitle')" :hint="$t('home.allVideosHint')">
         <VideoCard
           v-for="movie in restOfCatalog"
           :key="movie.id"

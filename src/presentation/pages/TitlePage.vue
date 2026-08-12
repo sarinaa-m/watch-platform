@@ -23,7 +23,7 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 <template>
   <div class="title-page">
     <button class="focusable back-btn" tabindex="0" @click="router.push({ name: 'home' })">
-      → Back
+      → {{ $t('common.back') }}
     </button>
 
     <QueryState :pending="isPending" :error="error">
@@ -38,7 +38,7 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
         </div>
 
         <div class="episodes">
-          <h2 class="section-title">Episodes</h2>
+          <h2 class="section-title">{{ $t('title.episodes') }}</h2>
           <div class="episode-row focusable" tabindex="0" @click="play" @keydown.enter="play">
             <div class="episode-num">1</div>
             <div class="episode-thumb" :style="{ backgroundImage: `url(${movie.cover_image})` }">

@@ -19,10 +19,8 @@ function select(): void {
 <template>
   <div class="profile-page">
     <div class="heading">
-      <h1 class="title">Who's watching?</h1>
-      <p class="subtitle">
-        Your watch progress is saved on the server and continues across all devices.
-      </p>
+      <h1 class="title">{{ $t('profile.title') }}</h1>
+      <p class="subtitle">{{ $t('profile.subtitle') }}</p>
     </div>
 
     <button class="focusable profile-tile" tabindex="0" @click="select">

@@ -16,14 +16,14 @@ function resume(id: number): void {
 <template>
   <div class="continue-page">
     <div class="heading">
-      <h1 class="title">Continue Watching</h1>
-      <p class="subtitle">
-        Your watch progress is saved on the server; pick up right where you left off.
-      </p>
+      <h1 class="title">{{ $t('continueWatching.title') }}</h1>
+      <p class="subtitle">{{ $t('continueWatching.subtitle') }}</p>
     </div>
 
     <QueryState :pending="isPending" :error="error">
-      <p v-if="!continueWatchingMovies.length" class="status">Nothing to continue watching.</p>
+      <p v-if="!continueWatchingMovies.length" class="status">
+        {{ $t('continueWatching.empty') }}
+      </p>
 
       <FocusableGrid v-else>
         <div class="grid">

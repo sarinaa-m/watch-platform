@@ -1,15 +1,20 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 export function usePlaybackStatusLabels(progressPercent: MaybeRefOrGetter<number>) {
+  const { t } = useI18n();
+
   const statusLabel = computed(() => {
     const percent = toValue(progressPercent);
-    if (percent >= 98) return '✓ Watched';
-    if (percent > 2) return `Resume from ${Math.round(percent)}%`;
-    return 'Not watched';
+    if (percent >= 98) return t('playbackStatus.watched');
+    if (percent > 2) return t('playbackStatus.resumeFrom', { percent: Math.round(percent) });
+    return t('playbackStatus.notWatched');
   });
 
   const playLabel = computed(() =>
-    toValue(progressPercent) > 2 ? '▶ Continue Watching' : '▶ Start Watching'
+    toValue(progressPercent) > 2
+      ? t('playbackStatus.continueWatching')
+      : t('playbackStatus.startWatching')
   );
 
   return { statusLabel, playLabel };

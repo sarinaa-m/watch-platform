@@ -57,12 +57,12 @@ function backToIdentifier(): void {
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1 class="title">Arvan Watch</h1>
-      <p class="subtitle">Sign in to your account to continue</p>
+      <h1 class="title">{{ $t('login.title') }}</h1>
+      <p class="subtitle">{{ $t('login.subtitle') }}</p>
 
       <form v-if="step === 'identifier'" class="form" @submit.prevent="submitIdentifier">
         <label class="field">
-          <span class="field-label">Email or phone number</span>
+          <span class="field-label">{{ $t('login.identifierLabel') }}</span>
           <input
             v-model="identifier"
             class="focusable input"
@@ -76,17 +76,18 @@ function backToIdentifier(): void {
         </label>
         <p v-if="requestOtpError" class="error">{{ requestOtpError.message }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
-          {{ loading ? 'Sending...' : 'Get one-time code' }}
+          {{ loading ? $t('login.sendingCode') : $t('login.getCode') }}
         </button>
       </form>
 
       <form v-else class="form" @submit.prevent="submitOtp">
-        <p class="hint">
-          A one-time code was sent to <strong>{{ identifier }}</strong
-          >.
-        </p>
+        <i18n-t keypath="login.codeSentTo" tag="p" class="hint">
+          <template #identifier
+            ><strong>{{ identifier }}</strong></template
+          >
+        </i18n-t>
         <label class="field">
-          <span class="field-label">Verification code</span>
+          <span class="field-label">{{ $t('login.codeLabel') }}</span>
           <input
             v-model="otp"
             class="focusable input otp-input"
@@ -101,9 +102,11 @@ function backToIdentifier(): void {
         </label>
         <p v-if="verifyOtpError" class="error">{{ verifyOtpError.message }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
-          {{ loading ? 'Signing in...' : 'Verify and sign in' }}
+          {{ loading ? $t('login.signingIn') : $t('login.verifyAndSignIn') }}
         </button>
-        <button class="focusable ghost-btn" type="button" @click="backToIdentifier">Back</button>
+        <button class="focusable ghost-btn" type="button" @click="backToIdentifier">
+          {{ $t('common.back') }}
+        </button>
       </form>
     </div>
   </div>

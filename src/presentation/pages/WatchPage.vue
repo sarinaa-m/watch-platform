@@ -36,7 +36,7 @@ const {
 
 <template>
   <div class="watch">
-    <p v-if="isPending" class="status">Loading...</p>
+    <p v-if="isPending" class="status">{{ $t('common.loading') }}</p>
     <p v-else-if="error" class="status error">{{ error.message }}</p>
 
     <template v-else-if="movie">
@@ -51,7 +51,7 @@ const {
       />
 
       <button v-if="autoplayBlocked" class="focusable unmute-banner" tabindex="0" @click="unmute">
-        🔇 Playback started muted — click to hear audio
+        {{ $t('watch.unmuteBanner') }}
       </button>
 
       <div class="top-bar">
@@ -60,7 +60,7 @@ const {
           tabindex="0"
           @click="router.push({ name: 'title', params: { id: props.id } })"
         >
-          → Back
+          → {{ $t('common.back') }}
         </button>
         <div class="titles">
           <div class="title">{{ movie.title }}</div>
@@ -79,11 +79,11 @@ const {
         <div class="controls">
           <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(-10)">⟲ 10</button>
           <button class="focusable ctrl" tabindex="0" @click="togglePlay">
-            {{ paused ? '▶ Play' : '❚❚ Pause' }}
+            {{ paused ? `▶ ${$t('watch.play')}` : `❚❚ ${$t('watch.pause')}` }}
           </button>
           <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(10)">10 ⟳</button>
           <button class="focusable ctrl" tabindex="0" @click="playerRef?.toggleMute()">
-            {{ muted ? 'Sound: Muted' : 'Sound: On' }}
+            {{ muted ? $t('watch.soundMuted') : $t('watch.soundOn') }}
           </button>
         </div>
       </div>

@@ -1,14 +1,19 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { useAuth } from '@infra/state/authState';
 import { useUiState } from '@infra/state/uiState';
+import { useLocale } from '@infra/state/localeState';
+import type { AppLocale } from '@infra/i18n';
 import { initialsOf } from '@shared/utils/initials';
 
 const auth = useAuth();
 const ui = useUiState();
 const router = useRouter();
 const route = useRoute();
+const { t } = useI18n();
+const locale = useLocale();
 
 const HIDDEN_CHROME_ROUTES = new Set(['login', 'profile', 'watch']);
 const showChrome = computed(
@@ -18,10 +23,15 @@ const showChrome = computed(
     !HIDDEN_CHROME_ROUTES.has(String(route.name))
 );
 
-const navItems = [
-  { name: 'home', label: 'Home' },
-  { name: 'continueWatching', label: 'Continue Watching' },
-  { name: 'search', label: 'Search' },
+const navItems = computed(() => [
+  { name: 'home', label: t('app.nav.home') },
+  { name: 'continueWatching', label: t('app.nav.continueWatching') },
+  { name: 'search', label: t('app.nav.search') },
+]);
+
+const LOCALE_OPTIONS: Array<{ value: AppLocale; label: string }> = [
+  { value: 'en', label: 'EN' },
+  { value: 'fa', label: 'FA' },
 ];
 
 function handleLogout(): void {
@@ -34,7 +44,7 @@ function handleLogout(): void {
 <template>
   <div class="shell">
     <header v-if="showChrome" class="topbar">
-      <router-link :to="{ name: 'home' }" class="brand">Arvan Watch</router-link>
+      <router-link :to="{ name: 'home' }" class="brand">{{ t('app.brand') }}</router-link>
 
       <nav class="nav-pills">
         <router-link
@@ -49,7 +59,22 @@ function handleLogout(): void {
       </nav>
 
       <div class="topbar-right">
-        <button class="focusable logout-btn" tabindex="0" @click="handleLogout">Log out</button>
+        <div class="locale-switch">
+          <button
+            v-for="option in LOCALE_OPTIONS"
+            :key="option.value"
+            class="focusable locale-btn"
+            :class="{ active: locale.state.locale === option.value }"
+            tabindex="0"
+            type="button"
+            @click="locale.setLocale(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+        <button class="focusable logout-btn" tabindex="0" @click="handleLogout">
+          {{ t('app.logout') }}
+        </button>
         <router-link :to="{ name: 'profile' }" class="focusable avatar" tabindex="0">
           {{ initialsOf(auth.state.identifier) }}
         </router-link>
@@ -127,6 +152,39 @@ function handleLogout(): void {
   align-items: center;
   gap: var(--space-3);
   margin-right: auto;
+}
+
+.locale-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.locale-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  padding: 6px 10px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.locale-btn:hover,
+.locale-btn:focus-visible {
+  color: var(--color-text);
+}
+
+.locale-btn.active {
+  background: rgba(42, 111, 219, 0.22);
+  color: #fff;
 }
 
 .logout-btn {
