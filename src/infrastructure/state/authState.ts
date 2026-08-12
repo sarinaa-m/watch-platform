@@ -1,6 +1,6 @@
 import { computed, reactive, readonly } from 'vue';
 import type { Session } from '@domain/entities/session';
-import { setTokenProvider } from '@infra/api/httpClient';
+import { setTokenProvider, setUnauthorizedHandler } from '@infra/api/httpClient';
 import { loadStoredSession, persistSession } from '@shared/utils/sessionStorage';
 
 interface AuthState {
@@ -20,6 +20,7 @@ const state = reactive<AuthState>({
 const isAuthenticated = computed(() => !!state.token && Date.now() < (state.expiresAt ?? 0));
 
 setTokenProvider(() => state.token);
+setUnauthorizedHandler(() => logout());
 
 type LogoutHook = () => void;
 const logoutHooks: LogoutHook[] = [];

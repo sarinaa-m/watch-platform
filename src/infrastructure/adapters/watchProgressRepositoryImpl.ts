@@ -1,8 +1,8 @@
 import { httpClient } from '@infra/api/httpClient';
 import type { ContinueWatchingResponse, WatchProgress } from '@domain/entities';
-import type { WatchProgressRepository, UpdateWatchingDTO } from '@domain/ports';
+import type { UpdateWatchingDTO } from '@domain/ports';
 
-export const createWatchProgressRepository = (): WatchProgressRepository => ({
+export const createWatchProgressRepository = () => ({
   async getContinueWatching(): Promise<ContinueWatchingResponse> {
     return httpClient.get<ContinueWatchingResponse>('/continue-watching');
   },

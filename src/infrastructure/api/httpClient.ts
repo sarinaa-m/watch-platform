@@ -28,6 +28,12 @@ export function setTokenProvider(provider: () => string | null): void {
   tokenProvider = provider;
 }
 
+let unauthorizedHandler: () => void = () => {};
+
+export function setUnauthorizedHandler(handler: () => void): void {
+  unauthorizedHandler = handler;
+}
+
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const { method = 'GET', body, auth = true, headers = {}, keepalive = false } = options;
   const finalHeaders: Record<string, string> = { ...headers };
@@ -60,7 +66,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
 
   if (!response.ok) {
     if (response.status === 401 && token) {
-      window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      unauthorizedHandler();
     }
     throw {
       status: response.status,
