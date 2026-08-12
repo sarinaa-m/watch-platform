@@ -1,11 +1,19 @@
-import { getMovies, getMovieById } from '@infra/adapters/movieRepositoryImpl';
-import type { Movie } from '@domain/entities/movie';
+import { computed, toValue, type MaybeRefOrGetter } from 'vue';
+import { movieListRepository } from '@infra/adapters/movieRepositoryImpl';
+import { movieKeys } from '@shared/api/queryKeys';
+import { useQuery } from '@tanstack/vue-query';
 
-export async function listMoviesUseCase(): Promise<Movie[]> {
-  const res = await getMovies();
-  return res.data;
-}
+export const useMovieList = () => {
+  return useQuery({
+    queryKey: movieKeys.list(),
+    queryFn: () => movieListRepository.getMovies(),
+  });
+};
 
-export function getMovieUseCase(id: number | string): Promise<Movie> {
-  return getMovieById(id);
-}
+export const useMovieItem = (id: MaybeRefOrGetter<string | number>) => {
+  const movieId = computed(() => toValue(id));
+  return useQuery({
+    queryKey: movieKeys.detail(movieId.value),
+    queryFn: () => movieListRepository.getMovieById(movieId.value),
+  });
+};

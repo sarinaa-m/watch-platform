@@ -1,9 +1,4 @@
-import type { Movie } from '@domain/entities/movie';
-
-export interface MovieListResponse {
-  data: Movie[];
-  total: number;
-}
+import type { Movie, MovieListResponse } from '@domain/entities';
 
 export interface MovieRepository {
   getMovies(): Promise<MovieListResponse>;

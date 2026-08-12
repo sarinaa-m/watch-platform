@@ -3,3 +3,14 @@ export interface Session {
   identifier: string;
   expiresAt: number;
 }
+
+export interface VerifyOtpResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+}
+export interface GetOtpResponse {
+  message: string;
+  identifier: string;
+  otp: string;
+}

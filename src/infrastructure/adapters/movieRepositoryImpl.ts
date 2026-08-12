@@ -1,13 +1,14 @@
 import { httpClient } from '@infra/api/httpClient';
-import type { Movie } from '@domain/entities/movie';
-import type { MovieListResponse } from '@domain/ports/out/MovieRepository';
+import type { Movie, MovieListResponse } from '@domain/entities/movie';
+import type { MovieRepository } from '@domain/ports/out';
 
-// GET /movies - public, returns { data: Movie[], total }
-export function getMovies(): Promise<MovieListResponse> {
-  return httpClient.get<MovieListResponse>('/movies');
-}
+export const createMovieListRepository = (): MovieRepository => ({
+  async getMovies(): Promise<MovieListResponse> {
+    return httpClient.get<MovieListResponse>('/movies');
+  },
+  async getMovieById(id: number | string): Promise<Movie> {
+    return httpClient.get<Movie>(`/movies/${id}`);
+  },
+});
 
-// GET /movies/{id} - public
-export function getMovieById(id: number | string): Promise<Movie> {
-  return httpClient.get<Movie>(`/movies/${id}`);
-}
+export const movieListRepository = createMovieListRepository();

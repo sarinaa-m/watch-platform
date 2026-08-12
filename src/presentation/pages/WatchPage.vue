@@ -1,163 +1,57 @@
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
-import { onBeforeRouteLeave, useRouter } from 'vue-router';
-import { getMovieUseCase } from '@application/usecases/movieUseCases';
-import { useWatchStore } from '@infra/storage/watchStore';
-import { loadStoredSession } from '@shared/utils/sessionStorage';
-import { envConfig } from '@config/env.config';
-import type { Movie } from '@domain/entities/movie';
-import type { ApiError } from '@infra/api/httpClient';
+import { useRouter } from 'vue-router';
 import VideoPlayer from '@presentation/components/VideoPlayer.vue';
-import SyncToast from '@presentation/components/SyncToast.vue';
+import WatchPageSkeleton from '@presentation/components/skeletons/WatchPageSkeleton.vue';
+import { useWatchPlayer } from '@presentation/composables/useWatchPlayer';
+import { formatTime } from '@shared/utils/formatTime';
+import { Pause, Play, RotateCcw, RotateCw } from 'lucide-vue-next';
 
 const props = defineProps<{
   id: string | number;
 }>();
 
 const router = useRouter();
-const watchStore = useWatchStore();
-const playerRef = ref<InstanceType<typeof VideoPlayer> | null>(null);
 
-const movie = ref<Movie | null>(null);
-const loading = ref(true);
-const error = ref('');
-const showToast = ref(false);
-const toastDetail = ref('');
-
-// Resume position only applies if this is the video the user last left
-// off on; otherwise a fresh video starts at 0.
-const startPosition = computed(() => {
-  const cw = watchStore.continueWatching;
-  if (cw && cw.video_id === Number(props.id)) return cw.position_seconds;
-  return 0;
-});
-
-const currentTime = computed(() => playerRef.value?.currentTime ?? 0);
-const duration = computed(() => playerRef.value?.duration ?? 0);
-const paused = computed(() => playerRef.value?.paused ?? true);
-const muted = computed(() => playerRef.value?.muted ?? false);
-const progressPercent = computed(() =>
-  duration.value > 0 ? Math.min(100, (currentTime.value / duration.value) * 100) : 0
-);
-
-function formatTime(seconds: number): string {
-  const total = Math.max(0, Math.round(seconds || 0));
-  const m = Math.floor(total / 60);
-  const s = total % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
-
-let lastKnownPosition = 0;
-let syncTimer: ReturnType<typeof setInterval> | null = null;
-let toastTimer: ReturnType<typeof setTimeout> | null = null;
-
-const SYNC_INTERVAL_MS = 8000;
-
-function flashToast(time: number): void {
-  toastDetail.value = formatTime(time);
-  showToast.value = true;
-  if (toastTimer) clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    showToast.value = false;
-  }, 2000);
-}
-
-function scheduleSync(): void {
-  syncTimer = setInterval(() => {
-    if (lastKnownPosition > 0) {
-      watchStore
-        .syncProgress(Number(props.id), lastKnownPosition)
-        .then(() => flashToast(lastKnownPosition))
-        .catch(() => {
-          // Non-fatal: next periodic tick or pause/leave sync will retry.
-        });
-    }
-  }, SYNC_INTERVAL_MS);
-}
-
-function handleTimeUpdate(time: number): void {
-  lastKnownPosition = time;
-}
-
-function handlePause(time: number): void {
-  lastKnownPosition = time;
-  watchStore
-    .syncProgress(Number(props.id), time)
-    .then(() => flashToast(time))
-    .catch(() => {});
-}
-
-function handleBeforeUnload(): void {
-  // Best-effort sync when the tab/window is closing.
-  if (lastKnownPosition > 0) {
-    const session = loadStoredSession();
-    if (!session?.token) return;
-    const url = `${envConfig.baseApiUrl}/watch-progress`;
-    const body = JSON.stringify({
-      video_id: Number(props.id),
-      position_seconds: lastKnownPosition,
-    });
-    // sendBeacon can't set custom headers for auth, so PUT via fetch with
-    // keepalive as a best-effort fallback for the unload case.
-    fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.token}` },
-      body,
-      keepalive: true,
-    }).catch(() => {});
-  }
-}
-
-onBeforeRouteLeave(() => {
-  if (lastKnownPosition > 0) {
-    watchStore.syncProgress(Number(props.id), lastKnownPosition).catch(() => {});
-  }
-});
-
-function togglePlay(): void {
-  if (paused.value) playerRef.value?.play();
-  else playerRef.value?.pause();
-}
-
-function seekBar(e: MouseEvent): void {
-  const track = e.currentTarget as HTMLElement;
-  const rect = track.getBoundingClientRect();
-  const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-  playerRef.value?.seekTo(fraction * duration.value);
-}
-
-onMounted(async () => {
-  window.addEventListener('beforeunload', handleBeforeUnload);
-  try {
-    movie.value = await getMovieUseCase(props.id);
-    scheduleSync();
-  } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'ویدیو یافت نشد.';
-  } finally {
-    loading.value = false;
-  }
-});
-
-onBeforeUnmount(() => {
-  window.removeEventListener('beforeunload', handleBeforeUnload);
-  if (syncTimer) clearInterval(syncTimer);
-  if (toastTimer) clearTimeout(toastTimer);
-});
+const {
+  playerRef,
+  movie,
+  isPending,
+  error,
+  startPosition,
+  currentTime,
+  duration,
+  paused,
+  muted,
+  progressPercent,
+  autoplayBlocked,
+  handleTimeUpdate,
+  handlePause,
+  handleBlocked,
+  togglePlay,
+  unmute,
+  seekBar,
+} = useWatchPlayer(() => props.id);
 </script>
 
 <template>
   <div class="watch">
-    <p v-if="loading" class="status">در حال بارگذاری...</p>
-    <p v-else-if="error" class="status error">{{ error }}</p>
+    <WatchPageSkeleton v-if="isPending" />
+    <p v-else-if="error" class="status error">{{ error.message }}</p>
 
     <template v-else-if="movie">
       <VideoPlayer
         ref="playerRef"
         :src="movie.video_url"
         :start-position="startPosition"
+        autoplay
         @timeupdate="handleTimeUpdate"
         @pause="handlePause"
+        @blocked="handleBlocked"
       />
+
+      <button v-if="autoplayBlocked" class="focusable unmute-banner" tabindex="0" @click="unmute">
+        {{ $t('watch.unmuteBanner') }}
+      </button>
 
       <div class="top-bar">
         <button
@@ -165,7 +59,7 @@ onBeforeUnmount(() => {
           tabindex="0"
           @click="router.push({ name: 'title', params: { id: props.id } })"
         >
-          → بازگشت
+          → {{ $t('common.back') }}
         </button>
         <div class="titles">
           <div class="title">{{ movie.title }}</div>
@@ -182,18 +76,28 @@ onBeforeUnmount(() => {
         </div>
 
         <div class="controls">
-          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(-10)">⟲ ۱۰</button>
-          <button class="focusable ctrl" tabindex="0" @click="togglePlay">
-            {{ paused ? '▶ پخش' : '❚❚ توقف' }}
+          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(-10)">
+            <RotateCcw :size="14" /> <span>{{ 10 }}</span>
           </button>
-          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(10)">۱۰ ⟳</button>
+          <button class="focusable ctrl" tabindex="0" @click="togglePlay">
+            <template v-if="paused"
+              ><Play :size="16" />
+              <span>
+                {{ $t('watch.play') }}
+              </span></template
+            >
+            <template v-else
+              ><Pause :size="16" /> <span>{{ $t('watch.pause') }}</span></template
+            >
+          </button>
+          <button class="focusable ctrl" tabindex="0" @click="playerRef?.seekBy(10)">
+            <span>{{ 10 }}</span> <RotateCw :size="14" />
+          </button>
           <button class="focusable ctrl" tabindex="0" @click="playerRef?.toggleMute()">
-            {{ muted ? 'صدا: بی‌صدا' : 'صدا: روشن' }}
+            <span>{{ muted ? $t('watch.soundMuted') : $t('watch.soundOn') }}</span>
           </button>
         </div>
       </div>
-
-      <SyncToast v-if="showToast" :detail="toastDetail" />
     </template>
   </div>
 </template>
@@ -215,11 +119,32 @@ onBeforeUnmount(() => {
   color: #f87171;
 }
 
+.unmute-banner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  padding: 12px 22px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: var(--color-text);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+}
+
+.unmute-banner:hover,
+.unmute-banner:focus-visible {
+  background: rgba(0, 0, 0, 0.85);
+}
+
 .top-bar {
   position: absolute;
   top: var(--space-4);
-  right: var(--space-4);
-  left: var(--space-4);
+  inset-inline: var(--space-4);
   display: flex;
   align-items: flex-start;
   gap: var(--space-3);
@@ -256,8 +181,7 @@ onBeforeUnmount(() => {
 .bottom-bar {
   position: absolute;
   bottom: var(--space-4);
-  right: var(--space-4);
-  left: var(--space-4);
+  inset-inline: var(--space-4);
   z-index: 2;
   display: grid;
   gap: var(--space-3);
@@ -324,13 +248,11 @@ onBeforeUnmount(() => {
   background: rgba(255, 255, 255, 0.16);
 }
 
-/* Top/bottom gradient scrims so controls stay legible over any frame */
 .watch::before,
 .watch::after {
   content: '';
   position: absolute;
-  right: 0;
-  left: 0;
+  inset-inline: 0;
   z-index: 1;
   pointer-events: none;
 }

@@ -6,14 +6,16 @@ const props = withDefaults(
   defineProps<{
     src: string;
     startPosition?: number;
+    autoplay?: boolean;
   }>(),
-  { startPosition: 0 }
+  { startPosition: 0, autoplay: false }
 );
 
 const emit = defineEmits<{
   timeupdate: [time: number];
   pause: [time: number];
   ready: [];
+  blocked: [];
 }>();
 
 const videoRef = ref<HTMLVideoElement | null>(null);
@@ -22,30 +24,29 @@ const duration = ref(0);
 const paused = ref(true);
 const muted = ref(false);
 let hls: Hls | null = null;
+let seekApplied = false;
+
+function handleReady(): void {
+  if (props.startPosition > 0) seekTo(props.startPosition);
+  seekApplied = true;
+  emit('ready');
+  if (props.autoplay) void attemptAutoplay();
+}
 
 function loadSource(): void {
   const video = videoRef.value;
   if (!video) return;
 
+  seekApplied = false;
+
   if (Hls.isSupported()) {
     hls = new Hls();
     hls.loadSource(props.src);
     hls.attachMedia(video);
-    hls.on(Hls.Events.MANIFEST_PARSED, () => {
-      if (props.startPosition > 0) video.currentTime = props.startPosition;
-      emit('ready');
-    });
+    hls.on(Hls.Events.MANIFEST_PARSED, handleReady);
   } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    // Native HLS support (Safari)
     video.src = props.src;
-    video.addEventListener(
-      'loadedmetadata',
-      () => {
-        if (props.startPosition > 0) video.currentTime = props.startPosition;
-        emit('ready');
-      },
-      { once: true }
-    );
+    video.addEventListener('loadedmetadata', handleReady, { once: true });
   }
 }
 
@@ -88,8 +89,6 @@ function handleVolumeChange(): void {
   muted.value = video.muted;
 }
 
-// Keyboard shortcuts: space/enter play-pause, left/right seek 10s.
-// These work alongside the custom control chrome the parent renders.
 function handleKeydown(e: KeyboardEvent): void {
   const video = videoRef.value;
   if (!video) return;
@@ -97,7 +96,7 @@ function handleKeydown(e: KeyboardEvent): void {
     case ' ':
     case 'Enter':
       e.preventDefault();
-      if (video.paused) video.play();
+      if (video.paused) void attemptAutoplay();
       else video.pause();
       break;
     case 'ArrowRight':
@@ -111,8 +110,28 @@ function handleKeydown(e: KeyboardEvent): void {
   }
 }
 
-function play(): void {
-  videoRef.value?.play();
+function play(): Promise<void> {
+  const video = videoRef.value;
+  if (!video) return Promise.resolve();
+  return video.play() ?? Promise.resolve();
+}
+
+async function attemptAutoplay(): Promise<void> {
+  const video = videoRef.value;
+  if (!video) return;
+  try {
+    await play();
+  } catch (err) {
+    if ((err as DOMException)?.name !== 'NotAllowedError') return;
+    video.muted = true;
+    muted.value = true;
+    try {
+      await play();
+      emit('blocked');
+    } catch {
+      emit('blocked');
+    }
+  }
 }
 
 function pause(): void {
@@ -151,9 +170,21 @@ watch(
   }
 );
 
+watch(
+  () => props.startPosition,
+  (position) => {
+    if (seekApplied || position <= 0) return;
+    const video = videoRef.value;
+    if (!video || !video.duration) return;
+    seekTo(position);
+    seekApplied = true;
+  }
+);
+
 defineExpose({
   videoRef,
   play,
+  attemptAutoplay,
   pause,
   seekBy,
   seekTo,
@@ -171,6 +202,7 @@ defineExpose({
     class="focusable player"
     playsinline
     tabindex="0"
+    autoplay
     @timeupdate="handleTimeUpdate"
     @durationchange="handleDurationChange"
     @play="handlePlayState"

@@ -6,15 +6,30 @@ export interface ApiError {
   message: string;
 }
 
+export function isApiError(err: unknown): err is ApiError {
+  return typeof err === 'object' && err !== null && 'status' in err && 'error' in err;
+}
+
+export function isFatalApiError(err: unknown): boolean {
+  return isApiError(err) && err.status >= 400 && err.status < 500;
+}
+
 interface RequestOptions {
   method?: 'GET' | 'POST' | 'PUT';
   body?: unknown;
-  token?: string | null;
+  auth?: boolean;
   headers?: Record<string, string>;
+  keepalive?: boolean;
+}
+
+let tokenProvider: () => string | null = () => null;
+
+export function setTokenProvider(provider: () => string | null): void {
+  tokenProvider = provider;
 }
 
 async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const { method = 'GET', body, token, headers = {} } = options;
+  const { method = 'GET', body, auth = true, headers = {}, keepalive = false } = options;
   const finalHeaders: Record<string, string> = { ...headers };
   let finalBody: BodyInit | undefined;
 
@@ -23,6 +38,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     finalBody = JSON.stringify(body);
   }
 
+  const token = auth ? tokenProvider() : null;
   if (token) {
     finalHeaders['Authorization'] = `Bearer ${token}`;
   }
@@ -33,6 +49,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       method,
       headers: finalHeaders,
       body: finalBody,
+      keepalive,
     });
   } catch {
     throw { status: 0, error: 'network_error', message: 'Could not reach the server.' } as ApiError;
@@ -42,7 +59,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const data = isJson ? await response.json().catch(() => null) : null;
 
   if (!response.ok) {
-    if (response.status === 401) {
+    if (response.status === 401 && token) {
       window.dispatchEvent(new CustomEvent('auth:unauthorized'));
     }
     throw {

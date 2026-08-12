@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
-import { useUiStore } from '@infra/storage/uiStore';
 import { initialsOf } from '@shared/utils/initials';
+import { useCurrentUserQuery } from '@application/usecases/authUseCases';
 
-const auth = useAuthStore();
-const ui = useUiStore();
 const router = useRouter();
 const route = useRoute();
-
+const { data: currentUser } = useCurrentUserQuery();
 function select(): void {
-  ui.confirm();
   const redirect = route.query.redirect;
   router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
 }
@@ -19,15 +15,13 @@ function select(): void {
 <template>
   <div class="profile-page">
     <div class="heading">
-      <h1 class="title">چه کسی تماشا می‌کند؟</h1>
-      <p class="subtitle">
-        پیشرفت تماشای شما روی سرور ذخیره می‌شود و روی همه دستگاه‌ها ادامه پیدا می‌کند.
-      </p>
+      <h1 class="title">{{ $t('profile.title') }}</h1>
+      <p class="subtitle">{{ $t('profile.subtitle') }}</p>
     </div>
 
     <button class="focusable profile-tile" tabindex="0" @click="select">
-      <span class="avatar">{{ initialsOf(auth.identifier) }}</span>
-      <span class="name">{{ auth.identifier }}</span>
+      <span class="avatar">{{ initialsOf(currentUser?.identifier) }}</span>
+      <span class="name">{{ currentUser?.identifier }}</span>
     </button>
   </div>
 </template>

@@ -1,37 +1,51 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
-import { useUiStore } from '@infra/storage/uiStore';
+import { useI18n } from 'vue-i18n';
+import { useAuth } from '@infra/state/authState';
+import { useLocale } from '@infra/state/localeState';
+import { useSearch } from '@infra/state/searchState';
+import type { AppLocale } from '@infra/i18n';
 import { initialsOf } from '@shared/utils/initials';
-
-const auth = useAuthStore();
-const ui = useUiStore();
-const router = useRouter();
+import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
+import SearchBox from '@presentation/components/SearchBox.vue';
+const auth = useAuth();
 const route = useRoute();
+const router = useRouter();
+const { t } = useI18n();
+const locale = useLocale();
 
-const HIDDEN_CHROME_ROUTES = new Set(['login', 'profile', 'watch']);
-const showChrome = computed(
-  () => auth.isAuthenticated && ui.profileConfirmed && !HIDDEN_CHROME_ROUTES.has(String(route.name))
-);
+const showChrome = computed(() => auth.isAuthenticated.value && !route.meta.hideChrome);
 
-const navItems = [
-  { name: 'home', label: 'خانه' },
-  { name: 'continueWatching', label: 'ادامه تماشا' },
-  { name: 'search', label: 'جست‌وجو' },
+const navItems = computed(() => [
+  { name: 'home', label: t('app.nav.home') },
+  { name: 'continueWatching', label: t('app.nav.continueWatching') },
+]);
+
+const LOCALE_OPTIONS: Array<{ value: AppLocale; label: string }> = [
+  { value: 'en', label: 'EN' },
+  { value: 'fa', label: 'FA' },
 ];
+
+const search = useSearch();
+const searchQuery = ref(search.state.query);
+
+watch(searchQuery, (value) => {
+  search.setQuery(value);
+  if (value.trim() && route.name !== 'home') {
+    router.push({ name: 'home' });
+  }
+});
 
 function handleLogout(): void {
   auth.logout();
-  ui.reset();
-  router.push({ name: 'login' });
 }
 </script>
 
 <template>
   <div class="shell">
     <header v-if="showChrome" class="topbar">
-      <router-link :to="{ name: 'home' }" class="brand">آروان واچ</router-link>
+      <router-link :to="{ name: 'home' }" class="brand">{{ t('app.brand') }}</router-link>
 
       <nav class="nav-pills">
         <router-link
@@ -45,10 +59,28 @@ function handleLogout(): void {
         </router-link>
       </nav>
 
+      <SearchBox v-model="searchQuery" />
+
       <div class="topbar-right">
-        <button class="focusable logout-btn" tabindex="0" @click="handleLogout">خروج</button>
-        <router-link :to="{ name: 'profile' }" class="focusable avatar" tabindex="0">
-          {{ initialsOf(auth.identifier) }}
+        <div class="locale-switch">
+          <button
+            v-for="option in LOCALE_OPTIONS"
+            :key="option.value"
+            class="focusable locale-btn"
+            :class="{ active: locale.state.locale === option.value }"
+            tabindex="0"
+            type="button"
+            @click="locale.setLocale(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+        <button class="focusable logout-btn" tabindex="0" @click="handleLogout">
+          {{ t('app.logout') }}
+        </button>
+        <router-link :to="{ name: 'profile' }" class="focusable account-link" tabindex="0">
+          <span class="avatar">{{ initialsOf(auth.state.identifier) }}</span>
+          <span class="account-name">{{ auth.state.identifier }}</span>
         </router-link>
       </div>
     </header>
@@ -56,6 +88,7 @@ function handleLogout(): void {
       <router-view />
     </main>
   </div>
+  <VueQueryDevtools />
 </template>
 
 <style scoped>
@@ -81,32 +114,31 @@ function handleLogout(): void {
 
 .brand {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 1.15rem;
+  font-weight: 800;
+  font-size: 1.3rem;
   text-decoration: none;
-  color: var(--color-text);
-  letter-spacing: -0.01em;
+  color: var(--color-accent-strong);
+  letter-spacing: -0.02em;
   white-space: nowrap;
 }
 
 .nav-pills {
   display: flex;
   align-items: center;
-  gap: var(--space-2);
+  gap: var(--space-4);
 }
 
 .pill {
-  padding: 8px 16px;
-  border-radius: 999px;
-  font-size: 0.9rem;
+  padding: 4px 0;
+  font-size: 0.92rem;
+  font-weight: 600;
   text-decoration: none;
   white-space: nowrap;
   color: var(--color-text-muted);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-border);
+  border-bottom: 2px solid transparent;
   transition:
-    background 0.15s ease,
-    color 0.15s ease;
+    color 0.15s ease,
+    border-color 0.15s ease;
 }
 
 .pill:hover {
@@ -114,16 +146,48 @@ function handleLogout(): void {
 }
 
 .pill.active {
-  background: rgba(42, 111, 219, 0.22);
-  color: #fff;
-  border-color: rgba(90, 127, 255, 0.55);
+  color: var(--color-text);
+  border-color: var(--color-accent-strong);
 }
 
 .topbar-right {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  margin-right: auto;
+  margin-inline-start: auto;
+}
+
+.locale-switch {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+}
+
+.locale-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-muted);
+  padding: 6px 10px;
+  border-radius: calc(var(--radius-sm) - 2px);
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.locale-btn:hover,
+.locale-btn:focus-visible {
+  color: var(--color-text);
+}
+
+.locale-btn.active {
+  background: rgba(42, 111, 219, 0.22);
+  color: #fff;
 }
 
 .logout-btn {
@@ -145,6 +209,16 @@ function handleLogout(): void {
   color: var(--color-text);
 }
 
+.account-link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  color: var(--color-text);
+  padding: 4px;
+  border-radius: var(--radius-sm);
+}
+
 .avatar {
   width: 38px;
   height: 38px;
@@ -156,8 +230,22 @@ function handleLogout(): void {
   justify-content: center;
   font-size: 0.85rem;
   font-weight: 700;
-  text-decoration: none;
   color: #fff;
+}
+
+.account-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .account-name {
+    display: none;
+  }
 }
 
 .content {

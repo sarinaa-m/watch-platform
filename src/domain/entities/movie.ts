@@ -5,3 +5,8 @@ export interface Movie {
   cover_image: string;
   video_url: string;
 }
+
+export interface MovieListResponse {
+  data: Movie[];
+  total: number;
+}

@@ -1,11 +1,7 @@
-export interface VerifyOtpResponse {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-}
+import type { GetOtpResponse, VerifyOtpResponse } from '@domain/entities';
 
 export interface AuthRepository {
-  requestOtp(identifier: string): Promise<void>;
+  requestOtp(identifier: string): Promise<GetOtpResponse>;
   verifyOtp(identifier: string, otp: string): Promise<VerifyOtpResponse>;
-  getCurrentUser(token: string): Promise<{ identifier: string }>;
+  getCurrentUser(): Promise<{ identifier: string }>;
 }

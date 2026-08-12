@@ -30,9 +30,6 @@ export default tseslint.config(
     },
   },
   {
-    // TypeScript already reports undefined-variable errors with full type
-    // information; ESLint's no-undef is redundant here and produces false
-    // positives against DOM/TS-only globals in .vue files.
     files: ['**/*.ts', '**/*.vue'],
     rules: {
       'no-undef': 'off',
