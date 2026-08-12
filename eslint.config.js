@@ -34,5 +34,22 @@ export default tseslint.config(
     rules: {
       'no-undef': 'off',
     },
+  },
+  {
+    files: ['src/presentation/**/*.{ts,vue}'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['@infra/adapters', '@infra/adapters/*', '@infra/query', '@infra/query/*', '@infra/api', '@infra/api/*'],
+              message:
+                'Presentation code must not import infrastructure adapters/query/http directly — go through an application/usecases hook instead.',
+            },
+          ],
+        },
+      ],
+    },
   }
 );

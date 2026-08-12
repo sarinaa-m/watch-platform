@@ -60,8 +60,9 @@ npm run preview   # serve the build locally to sanity-check it
    - on `/auth/verify-otp` it's `invalid_otp` on a request that carried no
      token — a form error, surfaced inline on the login page;
    - anywhere else it means the JWT we _did_ send is expired or invalid, so
-     the session is cleared and the app redirects to `/login` (the
-     `auth:unauthorized` event in `httpClient.ts` / `main.ts`).
+     the session is cleared and the app redirects to `/login`, via
+     `setUnauthorizedHandler` in `httpClient.ts` calling `logout()`
+     (wired in `authState.ts`).
 5. Because tokens last one hour with no refresh, `isAuthenticated` checks
    expiry rather than mere presence — otherwise a stale token would pass the
    router guard and flash a protected page before the inevitable 401 — and a
@@ -75,8 +76,9 @@ npm run preview   # serve the build locally to sanity-check it
 - `GET /continue-watching` is fetched on the home page to show a
   "continue watching" card and progress bars on the catalog.
 - Continue-watching is **server state**, so vue-query owns it
-  (`src/infrastructure/query/useWatchProgressQuery.ts`) — one cache and one
-  loading flag, rather than a hand-rolled store mirroring the query cache.
+  (`src/application/usecases/watchProgressUseCases.ts`, cached via
+  `src/infrastructure/query/queryClient.ts`) — one cache and one loading
+  flag, rather than a hand-rolled store mirroring the query cache.
   The mutation seeds the cache with the server's response, so the
   `progress_percentage` / `completed` values shown are always the server's.
 - While a video plays, `PUT /watch-progress` is called:
@@ -126,37 +128,54 @@ letting transient network failures retry on the next tick.
 
 ## Project structure
 
-Layered/hexagonal: domain ports are implemented by infrastructure
-adapters, application use cases orchestrate them, and the presentation
-layer talks to use cases plus Vue reactive state composables - never to
-`fetch`/axios directly.
+Layered: domain holds plain data types, application use cases wrap
+repository adapters in vue-query (`useQuery`/`useMutation`), and the
+presentation layer talks to use cases plus Vue reactive state
+composables — never to `fetch`/axios or the query cache directly.
 
 ```
 src/
 ├── config/                 # env.config.ts — runtime + build-time env access
-├── domain/
-│   ├── entities/            # Movie, Session, WatchProgress interfaces
-│   └── ports/out/            # repository interface contracts (AuthRepository, ...)
-├── application/usecases/     # business logic: auth, movie, watch-progress use cases
+├── domain/                    # Movie, Session, WatchProgress, UpdateWatchingDTO — plain types, no barrel
+├── application/usecases/      # business logic: auth, movie, watch-progress use cases
 ├── infrastructure/
-│   ├── api/httpClient.ts      # thin fetch wrapper (base URL, ambient auth header, 401 handling)
-│   ├── adapters/               # port implementations backed by httpClient
-│   ├── query/                   # vue-query client config
-│   ├── router/                   # route table + auth guard
-│   └── state/                     # Vue reactive composables: auth, UI, watch progress
+│   ├── api/httpClient.ts        # thin fetch wrapper (base URL, ambient auth header, 401 handling)
+│   ├── adapters/                  # repository objects backed by httpClient
+│   ├── query/                       # vue-query client config
+│   ├── router/                        # route table + auth guard
+│   └── state/                           # Vue reactive composables: auth, locale, search
 ├── presentation/
-│   ├── components/                # VideoCard, VideoPlayer (hls.js), FocusableGrid
-│   ├── pages/                      # LoginPage, HomePage, WatchPage
-│   └── styles/base.css              # design tokens + global styles
+│   ├── components/                        # VideoCard, VideoPlayer (hls.js), FocusableGrid
+│   ├── composables/                          # derived/selector logic over cached query data,
+│   │                                            DOM/player orchestration (see rule below)
+│   ├── pages/                                  # LoginPage, HomePage, WatchPage
+│   └── styles/base.css                          # design tokens + global styles
 ├── shared/
-│   ├── utils/                       # cross-cutting helpers (session localStorage)
-│   └── types/                        # ambient module augmentations (vue-router meta)
-└── vite-env.d.ts                       # ImportMetaEnv + window._env_ typing
+│   ├── api/                                       # queryKeys, ApiError type + guards
+│   ├── utils/                                       # cross-cutting helpers (session localStorage)
+│   └── types/                                         # ambient module augmentations (vue-router meta)
+└── vite-env.d.ts                                        # ImportMetaEnv + window._env_ typing
 ```
 
 Path aliases (`@config`, `@domain`, `@application`, `@infra`,
 `@presentation`, `@shared`) are wired in `vite.config.ts` and mirrored
-in `tsconfig.app.json` for type-checking/editor support.
+in `tsconfig.app.json` for type-checking/editor support. Note the alias
+config only maps `@domain/*` (a subpath), not the bare `@domain`, so
+domain types are always imported from their specific file
+(`@domain/movie`, `@domain/session`, `@domain/watchProgress`) rather
+than through a barrel.
+
+**`application/usecases` vs. `presentation/composables`:** a hook goes
+in `usecases` if it calls `useQuery`/`useMutation` against a repository
+adapter — that's the only place allowed to import
+`infrastructure/adapters` or `infrastructure/query`. Everything else
+(pure selectors over data a usecase already fetched, DOM/player/route
+orchestration) goes in `presentation/composables`, and it must consume
+that data through a usecase hook rather than reading the query cache or
+calling `httpClient` itself. This is enforced by the
+`no-restricted-imports` rule scoped to `src/presentation/**` in
+`eslint.config.js` — if a composable needs infrastructure directly, that
+is a sign it belongs in `usecases` instead.
 
 ## Tooling
 

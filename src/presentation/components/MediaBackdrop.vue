@@ -20,11 +20,11 @@ withDefaults(defineProps<{ image: string; size?: 'lg' | 'md' }>(), { size: 'lg' 
   position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  border: 1px solid var(--color-border);
   display: flex;
   align-items: flex-end;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 .backdrop--lg {
@@ -41,9 +41,9 @@ withDefaults(defineProps<{ image: string; size?: 'lg' | 'md' }>(), { size: 'lg' 
   inset: 0;
   background: linear-gradient(
     to top,
-    #0b111c 6%,
-    rgba(11, 17, 28, 0.78) 45%,
-    rgba(11, 17, 28, 0.3) 100%
+    var(--color-bg) 6%,
+    rgba(var(--color-bg-rgb), 0.78) 45%,
+    rgba(var(--color-bg-rgb), 0.3) 100%
   );
 }
 

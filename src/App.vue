@@ -1,17 +1,16 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { useAuth } from '@infra/state/authState';
 import { useLocale } from '@infra/state/localeState';
-import { useSearch } from '@infra/state/searchState';
 import type { AppLocale } from '@infra/i18n';
 import { initialsOf } from '@shared/utils/initials';
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 import SearchBox from '@presentation/components/SearchBox.vue';
+import { useTopbarSearch } from '@presentation/composables/useTopbarSearch';
 const auth = useAuth();
 const route = useRoute();
-const router = useRouter();
 const { t } = useI18n();
 const locale = useLocale();
 
@@ -27,15 +26,7 @@ const LOCALE_OPTIONS: Array<{ value: AppLocale; label: string }> = [
   { value: 'fa', label: 'FA' },
 ];
 
-const search = useSearch();
-const searchQuery = ref(search.state.query);
-
-watch(searchQuery, (value) => {
-  search.setQuery(value);
-  if (value.trim() && route.name !== 'home') {
-    router.push({ name: 'home' });
-  }
-});
+const searchQuery = useTopbarSearch();
 
 function handleLogout(): void {
   auth.logout();
@@ -109,7 +100,7 @@ function handleLogout(): void {
   top: 0;
   z-index: 40;
   backdrop-filter: blur(14px);
-  background: rgba(11, 17, 28, 0.72);
+  background: rgba(var(--color-bg-rgb), 0.72);
 }
 
 .brand {
@@ -186,8 +177,8 @@ function handleLogout(): void {
 }
 
 .locale-btn.active {
-  background: rgba(42, 111, 219, 0.22);
-  color: #fff;
+  background: rgba(var(--color-accent-rgb), 0.22);
+  color: var(--color-text);
 }
 
 .logout-btn {
@@ -230,7 +221,7 @@ function handleLogout(): void {
   justify-content: center;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
 }
 
 .account-name {

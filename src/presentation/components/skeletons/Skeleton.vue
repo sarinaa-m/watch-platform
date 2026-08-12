@@ -19,7 +19,7 @@ withDefaults(
   background: linear-gradient(
     100deg,
     var(--color-surface) 30%,
-    rgba(255, 255, 255, 0.08) 50%,
+    rgba(var(--color-text-rgb), 0.08) 50%,
     var(--color-surface) 70%
   );
   background-size: 200% 100%;

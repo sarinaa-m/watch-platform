@@ -10,3 +10,9 @@ export interface ContinueWatchingResponse {
   data: WatchProgress[];
   total: number;
 }
+
+export type UpdateWatchingDTO = {
+  videoId: number;
+  positionSeconds: number;
+  keepalive?: boolean;
+};

@@ -218,6 +218,6 @@ defineExpose({
   height: 100%;
   object-fit: cover;
   display: block;
-  background: #000;
+  background: var(--color-black);
 }
 </style>
