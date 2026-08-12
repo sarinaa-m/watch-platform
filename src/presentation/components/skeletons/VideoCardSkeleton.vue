@@ -22,7 +22,7 @@ withDefaults(defineProps<{ variant?: 'rail' | 'poster' }>(), { variant: 'rail' }
   display: flex;
   flex-direction: column;
   align-items: stretch;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(var(--color-text-rgb), 0.035);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 withDefaults(defineProps<{ percent: number; rounded?: boolean; trackColor?: string }>(), {
   rounded: true,
-  trackColor: 'rgba(255, 255, 255, 0.18)',
+  trackColor: 'rgba(var(--color-text-rgb), 0.18)',
 });
 </script>
 

@@ -84,12 +84,12 @@ const {
 .login-card {
   width: 100%;
   max-width: 420px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(var(--color-text-rgb), 0.04);
   backdrop-filter: blur(14px);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   padding: var(--space-5);
-  box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.6);
+  box-shadow: 0 30px 60px -20px rgba(var(--color-shadow-rgb), 0.6);
 }
 
 .title {
@@ -138,13 +138,13 @@ const {
 }
 
 .error {
-  color: #f87171;
+  color: var(--color-error);
   font-size: 0.9rem;
 }
 
 .primary-btn {
   background: var(--color-accent);
-  color: #fff;
+  color: var(--color-text);
   border: none;
   padding: 12px 16px;
   border-radius: var(--radius-sm);

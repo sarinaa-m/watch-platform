@@ -24,6 +24,6 @@ withDefaults(
 }
 
 .status.error {
-  color: #f87171;
+  color: var(--color-error);
 }
 </style>

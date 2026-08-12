@@ -106,7 +106,7 @@ const {
 .watch {
   position: relative;
   height: 100vh;
-  background: #000;
+  background: var(--color-black);
   overflow: hidden;
 }
 
@@ -116,7 +116,7 @@ const {
 }
 
 .status.error {
-  color: #f87171;
+  color: var(--color-error);
 }
 
 .unmute-banner {
@@ -127,8 +127,8 @@ const {
   z-index: 3;
   padding: 12px 22px;
   border-radius: 999px;
-  background: rgba(0, 0, 0, 0.72);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  background: rgba(var(--color-shadow-rgb), 0.72);
+  border: 1px solid rgba(var(--color-text-rgb), 0.28);
   color: var(--color-text);
   font-size: 0.95rem;
   font-weight: 600;
@@ -138,7 +138,7 @@ const {
 
 .unmute-banner:hover,
 .unmute-banner:focus-visible {
-  background: rgba(0, 0, 0, 0.85);
+  background: rgba(var(--color-shadow-rgb), 0.85);
 }
 
 .top-bar {
@@ -154,8 +154,8 @@ const {
 .back-btn {
   padding: 8px 18px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(var(--color-text-rgb), 0.1);
+  border: 1px solid rgba(var(--color-text-rgb), 0.18);
   color: var(--color-text);
   font-size: 0.9rem;
   cursor: pointer;
@@ -165,7 +165,7 @@ const {
 
 .back-btn:hover,
 .back-btn:focus-visible {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(var(--color-text-rgb), 0.16);
 }
 
 .titles {
@@ -195,7 +195,7 @@ const {
 
 .time {
   font-size: 0.85rem;
-  color: #e5e7eb;
+  color: var(--color-text-secondary);
   font-variant-numeric: tabular-nums;
 }
 
@@ -207,7 +207,7 @@ const {
   flex: 1;
   height: 6px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(var(--color-text-rgb), 0.22);
   position: relative;
   overflow: hidden;
   cursor: pointer;
@@ -237,15 +237,15 @@ const {
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--color-text);
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(var(--color-text-rgb), 0.08);
+  border: 1px solid rgba(var(--color-text-rgb), 0.16);
   cursor: pointer;
   backdrop-filter: blur(8px);
 }
 
 .ctrl:hover,
 .ctrl:focus-visible {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(var(--color-text-rgb), 0.16);
 }
 
 .watch::before,
@@ -260,12 +260,20 @@ const {
 .watch::before {
   top: 0;
   height: 30%;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+  background: linear-gradient(
+    to bottom,
+    rgba(var(--color-shadow-rgb), 0.7),
+    rgba(var(--color-shadow-rgb), 0)
+  );
 }
 
 .watch::after {
   bottom: 0;
   height: 35%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), rgba(0, 0, 0, 0));
+  background: linear-gradient(
+    to top,
+    rgba(var(--color-shadow-rgb), 0.85),
+    rgba(var(--color-shadow-rgb), 0)
+  );
 }
 </style>

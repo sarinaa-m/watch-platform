@@ -100,7 +100,7 @@ function handleLogout(): void {
   top: 0;
   z-index: 40;
   backdrop-filter: blur(14px);
-  background: rgba(11, 17, 28, 0.72);
+  background: rgba(var(--color-bg-rgb), 0.72);
 }
 
 .brand {
@@ -177,8 +177,8 @@ function handleLogout(): void {
 }
 
 .locale-btn.active {
-  background: rgba(42, 111, 219, 0.22);
-  color: #fff;
+  background: rgba(var(--color-accent-rgb), 0.22);
+  color: var(--color-text);
 }
 
 .logout-btn {
@@ -221,7 +221,7 @@ function handleLogout(): void {
   justify-content: center;
   font-size: 0.85rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
 }
 
 .account-name {

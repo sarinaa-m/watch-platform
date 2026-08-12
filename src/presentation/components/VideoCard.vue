@@ -25,7 +25,11 @@ defineEmits<{ select: [id: number] }>();
       <img class="thumb" :src="movie.cover_image" :alt="movie.title" loading="lazy" />
       <span class="hover-play" aria-hidden="true">▶</span>
       <div class="thumb-progress">
-        <ProgressBar :percent="progressPercent" :rounded="false" track-color="rgba(0, 0, 0, 0.4)" />
+        <ProgressBar
+          :percent="progressPercent"
+          :rounded="false"
+          track-color="rgba(var(--color-shadow-rgb), 0.4)"
+        />
       </div>
       <div v-if="variant === 'poster'" class="poster-overlay">
         <h3 class="poster-title">{{ movie.title }}</h3>
@@ -44,7 +48,7 @@ defineEmits<{ select: [id: number] }>();
   flex-direction: column;
   align-items: stretch;
   text-align: start;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(var(--color-text-rgb), 0.035);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   overflow: hidden;
@@ -63,7 +67,7 @@ defineEmits<{ select: [id: number] }>();
 .card:focus-visible {
   transform: translateY(-4px);
   border-color: var(--color-accent-strong);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 16px 32px rgba(var(--color-shadow-rgb), 0.5);
 }
 
 .thumb-wrap {
@@ -96,8 +100,8 @@ defineEmits<{ select: [id: number] }>();
   align-items: center;
   justify-content: center;
   font-size: 1.4rem;
-  color: #fff;
-  background: rgba(11, 17, 28, 0.35);
+  color: var(--color-text);
+  background: rgba(var(--color-bg-rgb), 0.35);
   opacity: 0;
   transition: opacity 0.15s ease;
   pointer-events: none;
@@ -113,7 +117,11 @@ defineEmits<{ select: [id: number] }>();
   inset-inline: 0;
   bottom: 0;
   padding: var(--space-2) var(--space-3);
-  background: linear-gradient(to top, rgba(11, 17, 28, 0.92), rgba(11, 17, 28, 0));
+  background: linear-gradient(
+    to top,
+    rgba(var(--color-bg-rgb), 0.92),
+    rgba(var(--color-bg-rgb), 0)
+  );
   opacity: 0;
   transition: opacity 0.15s ease;
 }

@@ -27,7 +27,7 @@ const query = defineModel<string>({ default: '' });
   padding: 8px 14px;
   font-size: 0.9rem;
   color: var(--color-text);
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(var(--color-text-rgb), 0.06);
   border: 1px solid var(--color-border);
   border-radius: 999px;
   outline: none;
