@@ -20,14 +20,16 @@
     "@tanstack/vue-query": "^5.101.4",
     "core-js": "^3.50.0",
     "hls.js": "^1.5.7",
-    "pinia": "^2.1.7",
+    "lucide-vue-next": "^1.0.0",
     "vue": "^3.4.21",
+    "vue-i18n": "^11.4.8",
     "vue-router": "^4.3.0"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.5.0",
     "@commitlint/config-conventional": "^19.5.0",
     "@eslint/js": "^9.13.0",
+    "@tanstack/vue-query-devtools": "^5.91.0",
     "@types/node": "^22.9.0",
     "@vitejs/plugin-vue": "^5.0.4",
     "eslint": "^9.13.0",

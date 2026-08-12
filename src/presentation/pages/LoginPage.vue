@@ -1,62 +1,78 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
-import type { ApiError } from '@infra/api/httpClient';
+import { useAuth } from '@infra/state/authState';
+import { useRequestOtpMutation, useVerifyOtpMutation } from '@application/usecases/authUseCases';
 
-const auth = useAuthStore();
+const auth = useAuth();
 const router = useRouter();
 const route = useRoute();
+
+const {
+  mutateAsync: requestOtpMutation,
+  isPending,
+  error: requestOtpError,
+} = useRequestOtpMutation();
+
+const {
+  mutateAsync: verifyOtpMutation,
+  isPending: verifyOtpPending,
+  error: verifyOtpError,
+} = useVerifyOtpMutation();
 
 const step = ref<'identifier' | 'otp'>('identifier');
 const identifier = ref('');
 const otp = ref('');
-const loading = ref(false);
-const error = ref('');
+const loading = computed(() => isPending.value || verifyOtpPending.value);
 
-async function submitIdentifier(): Promise<void> {
-  error.value = '';
-  loading.value = true;
+function submitIdentifier() {
   try {
-    await auth.requestOtp(identifier.value);
-    step.value = 'otp';
+    requestOtpMutation(identifier.value, {
+      onSuccess: (data) => {
+        otp.value = data.otp;
+        step.value = 'otp';
+      },
+    });
   } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'مشکلی پیش آمد.';
-  } finally {
-    loading.value = false;
+    console.log(err);
   }
 }
 
 async function submitOtp(): Promise<void> {
-  error.value = '';
-  loading.value = true;
   try {
-    await auth.verifyOtp(otp.value);
-    const redirect = route.query.redirect;
-    router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
+    verifyOtpMutation(
+      {
+        identifier: identifier.value,
+        otp: otp.value,
+      },
+      {
+        onSuccess: (data) => {
+          auth.setSession(data);
+          const redirect = route.query.redirect;
+          router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
+        },
+      }
+    );
   } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'کد وارد شده نامعتبر است.';
-  } finally {
-    loading.value = false;
+    console.log(err);
   }
 }
 
 function backToIdentifier(): void {
   step.value = 'identifier';
   otp.value = '';
-  error.value = '';
 }
 </script>
 
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1 class="title">آروان واچ</h1>
-      <p class="subtitle">برای ادامه وارد حساب کاربری خود شوید</p>
+      <h1 class="title">{{ $t('login.title') }}</h1>
+      <p class="subtitle">{{ $t('login.subtitle') }}</p>
 
       <form v-if="step === 'identifier'" class="form" @submit.prevent="submitIdentifier">
         <label class="field">
-          <span class="field-label">ایمیل یا شماره موبایل</span>
+          <span class="field-label">{{ $t('login.identifierLabel') }}</span>
           <input
             v-model="identifier"
             class="focusable input"
@@ -68,18 +84,20 @@ function backToIdentifier(): void {
             placeholder="you@example.com"
           />
         </label>
-        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="requestOtpError" class="error">{{ requestOtpError.message }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
-          {{ loading ? 'در حال ارسال...' : 'دریافت کد یکبار مصرف' }}
+          {{ loading ? $t('login.sendingCode') : $t('login.getCode') }}
         </button>
       </form>
 
       <form v-else class="form" @submit.prevent="submitOtp">
-        <p class="hint">
-          کد یکبار مصرف برای <strong>{{ identifier }}</strong> ارسال شد.
-        </p>
+        <i18n-t keypath="login.codeSentTo" tag="p" class="hint">
+          <template #identifier
+            ><strong>{{ identifier }}</strong></template
+          >
+        </i18n-t>
         <label class="field">
-          <span class="field-label">کد تایید</span>
+          <span class="field-label">{{ $t('login.codeLabel') }}</span>
           <input
             v-model="otp"
             class="focusable input otp-input"
@@ -92,11 +110,13 @@ function backToIdentifier(): void {
             autofocus
           />
         </label>
-        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="verifyOtpError" class="error">{{ verifyOtpError.message }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
-          {{ loading ? 'در حال ورود...' : 'تایید و ورود' }}
+          {{ loading ? $t('login.signingIn') : $t('login.verifyAndSignIn') }}
         </button>
-        <button class="focusable ghost-btn" type="button" @click="backToIdentifier">بازگشت</button>
+        <button class="focusable ghost-btn" type="button" @click="backToIdentifier">
+          {{ $t('common.back') }}
+        </button>
       </form>
     </div>
   </div>

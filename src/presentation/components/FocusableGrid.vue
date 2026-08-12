@@ -1,14 +1,8 @@
 <script setup lang="ts">
-// Implements a roving-tabindex grid: only one item is tab-stoppable at a
-// time, and arrow keys move focus between items based on their actual
-// on-screen position. This is what makes the catalog navigable from a
-// TV remote (which just sends arrow-key / enter events) as well as a
-// keyboard, without relying on the browser's default tab order.
 import { ref, onMounted, nextTick } from 'vue';
 
 const props = withDefaults(
   defineProps<{
-    // CSS selector (relative to this component's root) for focusable items
     itemSelector?: string;
   }>(),
   { itemSelector: '.focusable' }

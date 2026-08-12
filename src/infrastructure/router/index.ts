@@ -1,6 +1,5 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router';
-import { useAuthStore } from '@infra/storage/authStore';
-import { useUiStore } from '@infra/storage/uiStore';
+import { useAuth } from '@infra/state/authState';
 import { PATHS } from './paths';
 
 const routes: RouteRecordRaw[] = [
@@ -8,12 +7,13 @@ const routes: RouteRecordRaw[] = [
     path: PATHS.login.path,
     name: PATHS.login.name,
     component: () => import('@presentation/pages/LoginPage.vue'),
-    meta: { public: true },
+    meta: { public: true, hideChrome: true },
   },
   {
     path: PATHS.profile.path,
     name: PATHS.profile.name,
     component: () => import('@presentation/pages/ProfilePage.vue'),
+    meta: { hideChrome: true },
   },
   {
     path: PATHS.home.path,
@@ -26,11 +26,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@presentation/pages/ContinueWatchingPage.vue'),
   },
   {
-    path: PATHS.search.path,
-    name: PATHS.search.name,
-    component: () => import('@presentation/pages/SearchPage.vue'),
-  },
-  {
     path: PATHS.title.path,
     name: PATHS.title.name,
     component: () => import('@presentation/pages/TitlePage.vue'),
@@ -41,6 +36,7 @@ const routes: RouteRecordRaw[] = [
     name: PATHS.watch.name,
     component: () => import('@presentation/pages/WatchPage.vue'),
     props: true,
+    meta: { hideChrome: true },
   },
 ];
 
@@ -50,21 +46,11 @@ export const router = createRouter({
 });
 
 router.beforeEach((to) => {
-  const auth = useAuthStore();
-  if (!to.meta.public && !auth.isAuthenticated) {
+  const auth = useAuth();
+  if (!to.meta.public && !auth.isAuthenticated.value) {
     return { name: PATHS.login.name, query: { redirect: to.fullPath } };
   }
-  if (to.name === PATHS.login.name && auth.isAuthenticated) {
+  if (to.name === PATHS.login.name && auth.isAuthenticated.value) {
     return { name: PATHS.home.name };
-  }
-
-  const ui = useUiStore();
-  if (
-    auth.isAuthenticated &&
-    !ui.profileConfirmed &&
-    to.name !== PATHS.profile.name &&
-    !to.meta.public
-  ) {
-    return { name: PATHS.profile.name, query: { redirect: to.fullPath } };
   }
 });

@@ -8,4 +8,5 @@ export interface WatchProgress {
 
 export interface ContinueWatchingResponse {
   data: WatchProgress[];
+  total: number;
 }

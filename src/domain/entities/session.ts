@@ -9,3 +9,8 @@ export interface VerifyOtpResponse {
   token_type: string;
   expires_in: number;
 }
+export interface GetOtpResponse {
+  message: string;
+  identifier: string;
+  otp: string;
+}
