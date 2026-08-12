@@ -1,5 +1,5 @@
 import { computed, reactive, readonly } from 'vue';
-import type { Session } from '@domain/entities/session';
+import type { Session } from '@domain/session';
 import { setTokenProvider, setUnauthorizedHandler } from '@infra/api/httpClient';
 import { loadStoredSession, persistSession } from '@shared/utils/sessionStorage';
 

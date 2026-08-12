@@ -1,8 +1,7 @@
 import { watchProgressRepository } from '@infra/adapters/watchProgressRepositoryImpl';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { watchProgressKeys } from '@shared/api/queryKeys';
-import type { UpdateWatchingDTO } from '@domain/entities';
-import type { ContinueWatchingResponse } from '@domain/entities/watchProgress';
+import type { ContinueWatchingResponse, UpdateWatchingDTO } from '@domain/watchProgress';
 
 export function useContinueWatchingQuery() {
   return useQuery({

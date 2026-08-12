@@ -1,7 +1,7 @@
 import { computed } from 'vue';
 import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
 import { useMovieList } from '@application/usecases/movieUseCases';
-import type { Movie } from '@domain/entities/movie';
+import type { Movie } from '@domain/movie';
 
 export interface ContinueWatchingMovie {
   movie: Movie;

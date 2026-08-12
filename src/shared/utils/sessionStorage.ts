@@ -1,4 +1,4 @@
-import type { Session } from '@domain/entities/session';
+import type { Session } from '@domain/session';
 
 const STORAGE_KEY = 'arvan_auth';
 

@@ -1,5 +1,5 @@
 import { httpClient } from '@infra/api/httpClient';
-import type { VerifyOtpResponse, GetOtpResponse } from '@domain/entities';
+import type { VerifyOtpResponse, GetOtpResponse } from '@domain/session';
 
 export const createAuthRepository = () => ({
   async requestOtp(identifier: string): Promise<GetOtpResponse> {

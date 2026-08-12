@@ -1,5 +1,5 @@
 import { computed } from 'vue';
-import type { Session } from '@domain/entities/session';
+import type { Session } from '@domain/session';
 import { authRepository } from '@infra/adapters/authRepositoryImpl';
 import { useAuth } from '@infra/state/authState';
 import { authKeys } from '@shared/api/queryKeys';

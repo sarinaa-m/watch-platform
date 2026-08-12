@@ -136,7 +136,7 @@ composables — never to `fetch`/axios or the query cache directly.
 ```
 src/
 ├── config/                 # env.config.ts — runtime + build-time env access
-├── domain/entities/          # Movie, Session, WatchProgress, UpdateWatchingDTO
+├── domain/                    # Movie, Session, WatchProgress, UpdateWatchingDTO — plain types, no barrel
 ├── application/usecases/      # business logic: auth, movie, watch-progress use cases
 ├── infrastructure/
 │   ├── api/httpClient.ts        # thin fetch wrapper (base URL, ambient auth header, 401 handling)
@@ -159,7 +159,11 @@ src/
 
 Path aliases (`@config`, `@domain`, `@application`, `@infra`,
 `@presentation`, `@shared`) are wired in `vite.config.ts` and mirrored
-in `tsconfig.app.json` for type-checking/editor support.
+in `tsconfig.app.json` for type-checking/editor support. Note the alias
+config only maps `@domain/*` (a subpath), not the bare `@domain`, so
+domain types are always imported from their specific file
+(`@domain/movie`, `@domain/session`, `@domain/watchProgress`) rather
+than through a barrel.
 
 **`application/usecases` vs. `presentation/composables`:** a hook goes
 in `usecases` if it calls `useQuery`/`useMutation` against a repository

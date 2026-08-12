@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Movie } from '@domain/entities/movie';
+import type { Movie } from '@domain/movie';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
 import MediaBackdrop from '@presentation/components/MediaBackdrop.vue';
 import ProgressBar from '@presentation/components/ProgressBar.vue';

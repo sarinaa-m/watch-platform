@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Movie } from '@domain/entities/movie';
+import type { Movie } from '@domain/movie';
 import ProgressBar from '@presentation/components/ProgressBar.vue';
 
 withDefaults(
