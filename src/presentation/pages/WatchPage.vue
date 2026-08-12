@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router';
 import VideoPlayer from '@presentation/components/VideoPlayer.vue';
+import WatchPageSkeleton from '@presentation/components/skeletons/WatchPageSkeleton.vue';
 import { useWatchPlayer } from '@presentation/composables/useWatchPlayer';
 import { formatTime } from '@shared/utils/formatTime';
 
@@ -33,7 +34,7 @@ const {
 
 <template>
   <div class="watch">
-    <p v-if="isPending" class="status">{{ $t('common.loading') }}</p>
+    <WatchPageSkeleton v-if="isPending" />
     <p v-else-if="error" class="status error">{{ error.message }}</p>
 
     <template v-else-if="movie">

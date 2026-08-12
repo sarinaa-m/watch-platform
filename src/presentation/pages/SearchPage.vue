@@ -5,6 +5,7 @@ import type { Movie } from '@domain/entities/movie';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
 import QueryState from '@presentation/components/QueryState.vue';
+import CardGridSkeleton from '@presentation/components/skeletons/CardGridSkeleton.vue';
 import { useMovieList } from '@application/usecases/movieUseCases';
 
 const router = useRouter();
@@ -17,7 +18,7 @@ const movies = computed(() => data.value?.data ?? []);
 const results = computed<Movie[]>(() => {
   const q = query.value.trim().toLocaleLowerCase();
   if (!q) return movies.value ?? [];
-  return movies.value?.filter((m) => m.title.includes(q)) ?? [];
+  return movies.value?.filter((m) => m.title.toLocaleLowerCase().includes(q)) ?? [];
 });
 
 function openTitle(id: number): void {
@@ -37,6 +38,10 @@ function openTitle(id: number): void {
     </div>
 
     <QueryState :pending="isPending" :error="error">
+      <template #skeleton>
+        <CardGridSkeleton />
+      </template>
+
       <p class="results-label">
         <template v-if="query">{{ $t('search.queryPrefix', { query }) }}</template
         >{{ $t('search.resultsCount', { count: results.length }) }}

@@ -5,6 +5,7 @@ import { useMovieItem } from '@application/usecases/movieUseCases';
 import { useVideoProgress } from '@application/usecases/watchProgressUseCases';
 import { usePlaybackStatusLabels } from '@presentation/composables/usePlaybackStatusLabels';
 import QueryState from '@presentation/components/QueryState.vue';
+import TitlePageSkeleton from '@presentation/components/skeletons/TitlePageSkeleton.vue';
 
 const props = defineProps<{ id: string | number }>();
 
@@ -27,6 +28,10 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
     </button>
 
     <QueryState :pending="isPending" :error="error">
+      <template #skeleton>
+        <TitlePageSkeleton />
+      </template>
+
       <template v-if="movie">
         <div class="hero" :style="{ backgroundImage: `url(${movie.cover_image})` }">
           <div class="scrim" />

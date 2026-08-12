@@ -9,7 +9,11 @@ withDefaults(
 </script>
 
 <template>
-  <p v-if="pending" class="status">{{ $t('common.loading') }}</p>
+  <template v-if="pending">
+    <slot name="skeleton">
+      <p class="status">{{ $t('common.loading') }}</p>
+    </slot>
+  </template>
   <p v-else-if="error" class="status error">{{ error.message }}</p>
   <slot v-else />
 </template>

@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import FocusableGrid from '@presentation/components/FocusableGrid.vue';
 import QueryState from '@presentation/components/QueryState.vue';
+import CardGridSkeleton from '@presentation/components/skeletons/CardGridSkeleton.vue';
 import { useContinueWatchingMovies } from '@application/usecases/continueWatchingUseCases';
 
 const router = useRouter();
@@ -21,6 +22,10 @@ function resume(id: number): void {
     </div>
 
     <QueryState :pending="isPending" :error="error">
+      <template #skeleton>
+        <CardGridSkeleton />
+      </template>
+
       <p v-if="!continueWatchingMovies.length" class="status">
         {{ $t('continueWatching.empty') }}
       </p>

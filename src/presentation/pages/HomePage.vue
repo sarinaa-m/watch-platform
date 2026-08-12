@@ -3,6 +3,7 @@ import { useRouter } from 'vue-router';
 import VideoCard from '@presentation/components/VideoCard.vue';
 import Rail from '@presentation/components/Rail.vue';
 import QueryState from '@presentation/components/QueryState.vue';
+import RailSkeleton from '@presentation/components/skeletons/RailSkeleton.vue';
 import { useMovieList } from '@application/usecases/movieUseCases';
 import { useContinueWatchingMovies } from '@application/usecases/continueWatchingUseCases';
 
@@ -23,6 +24,11 @@ function playMovie(id: number | undefined): void {
 <template>
   <div class="home">
     <QueryState :pending="isPending" :error="error">
+      <template #skeleton>
+        <RailSkeleton />
+        <RailSkeleton />
+      </template>
+
       <Rail
         v-if="continueWatchingMovies.length"
         :title="$t('home.continueWatchingTitle')"
