@@ -17,4 +17,4 @@ export const createAuthRepository = () => ({
   },
 });
 
-export const authorityRepository = createAuthRepository();
+export const authRepository = createAuthRepository();
