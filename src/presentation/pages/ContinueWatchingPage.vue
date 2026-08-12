@@ -16,14 +16,14 @@ function resume(id: number): void {
 <template>
   <div class="continue-page">
     <div class="heading">
-      <h1 class="title">ادامه تماشا</h1>
+      <h1 class="title">Continue Watching</h1>
       <p class="subtitle">
-        وضعیت تماشای شما روی سرور ذخیره شده است؛ از همان‌جایی که رها کردید ادامه دهید.
+        Your watch progress is saved on the server; pick up right where you left off.
       </p>
     </div>
 
     <QueryState :pending="isPending" :error="error">
-      <p v-if="!continueWatchingMovies.length" class="status">چیزی برای ادامه تماشا نیست.</p>
+      <p v-if="!continueWatchingMovies.length" class="status">Nothing to continue watching.</p>
 
       <FocusableGrid v-else>
         <div class="grid">

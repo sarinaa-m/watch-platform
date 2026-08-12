@@ -9,7 +9,7 @@ withDefaults(
 </script>
 
 <template>
-  <p v-if="pending" class="status">در حال بارگذاری...</p>
+  <p v-if="pending" class="status">Loading...</p>
   <p v-else-if="error" class="status error">{{ error.message }}</p>
   <slot v-else />
 </template>

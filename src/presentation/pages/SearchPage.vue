@@ -32,13 +32,13 @@ function openTitle(id: number): void {
         v-model="query"
         class="focusable search-input"
         type="text"
-        placeholder="جست‌وجوی دوره یا موضوع…"
+        placeholder="Search for a course or topic…"
       />
     </div>
 
     <QueryState :pending="isPending" :error="error">
       <p class="results-label">
-        <template v-if="query">«{{ query }}» — </template>{{ results.length }} نتیجه
+        <template v-if="query">"{{ query }}" — </template>{{ results.length }} results
       </p>
       <FocusableGrid>
         <div class="grid">

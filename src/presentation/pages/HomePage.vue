@@ -23,7 +23,11 @@ function playMovie(id: number | undefined): void {
 <template>
   <div class="home">
     <QueryState :pending="isPending" :error="error">
-      <Rail v-if="continueWatchingMovies.length" title="ادامه تماشا" hint="روی سرور ذخیره شده">
+      <Rail
+        v-if="continueWatchingMovies.length"
+        title="Continue Watching"
+        hint="Saved on the server"
+      >
         <VideoCard
           v-for="item in continueWatchingMovies"
           :key="item.movie.id"
@@ -33,7 +37,7 @@ function playMovie(id: number | undefined): void {
         />
       </Rail>
 
-      <Rail title="همه ویدیوها" hint="فهرست کامل دوره‌ها">
+      <Rail title="All Videos" hint="Full course list">
         <VideoCard
           v-for="movie in restOfCatalog"
           :key="movie.id"

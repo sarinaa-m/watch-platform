@@ -19,9 +19,9 @@ const showChrome = computed(
 );
 
 const navItems = [
-  { name: 'home', label: 'خانه' },
-  { name: 'continueWatching', label: 'ادامه تماشا' },
-  { name: 'search', label: 'جست‌وجو' },
+  { name: 'home', label: 'Home' },
+  { name: 'continueWatching', label: 'Continue Watching' },
+  { name: 'search', label: 'Search' },
 ];
 
 function handleLogout(): void {
@@ -34,7 +34,7 @@ function handleLogout(): void {
 <template>
   <div class="shell">
     <header v-if="showChrome" class="topbar">
-      <router-link :to="{ name: 'home' }" class="brand">آروان واچ</router-link>
+      <router-link :to="{ name: 'home' }" class="brand">Arvan Watch</router-link>
 
       <nav class="nav-pills">
         <router-link
@@ -49,7 +49,7 @@ function handleLogout(): void {
       </nav>
 
       <div class="topbar-right">
-        <button class="focusable logout-btn" tabindex="0" @click="handleLogout">خروج</button>
+        <button class="focusable logout-btn" tabindex="0" @click="handleLogout">Log out</button>
         <router-link :to="{ name: 'profile' }" class="focusable avatar" tabindex="0">
           {{ initialsOf(auth.state.identifier) }}
         </router-link>

@@ -19,9 +19,9 @@ function select(): void {
 <template>
   <div class="profile-page">
     <div class="heading">
-      <h1 class="title">چه کسی تماشا می‌کند؟</h1>
+      <h1 class="title">Who's watching?</h1>
       <p class="subtitle">
-        پیشرفت تماشای شما روی سرور ذخیره می‌شود و روی همه دستگاه‌ها ادامه پیدا می‌کند.
+        Your watch progress is saved on the server and continues across all devices.
       </p>
     </div>
 

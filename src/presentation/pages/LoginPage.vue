@@ -1,62 +1,68 @@
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuth } from '@infra/state/authState';
-import type { ApiError } from '@infra/api/httpClient';
+import { useRequestOtpMutation, useVerifyOtpMutation } from '@application/usecases/authUseCases';
 
 const auth = useAuth();
 const router = useRouter();
 const route = useRoute();
 
+const {
+  mutateAsync: requestOtpMutation,
+  isPending,
+  error: requestOtpError,
+} = useRequestOtpMutation();
+const {
+  mutateAsync: verifyOtpMutation,
+  isPending: verifyOtpPending,
+  error: verifyOtpError,
+} = useVerifyOtpMutation();
+
 const step = ref<'identifier' | 'otp'>('identifier');
 const identifier = ref('');
 const otp = ref('');
-const loading = ref(false);
-const error = ref('');
+const loading = computed(() => isPending.value || verifyOtpPending.value);
 
 async function submitIdentifier(): Promise<void> {
-  error.value = '';
-  loading.value = true;
   try {
-    await auth.requestOtp(identifier.value);
+    const response = await requestOtpMutation(identifier.value);
+    otp.value = response.otp;
     step.value = 'otp';
   } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'مشکلی پیش آمد.';
-  } finally {
-    loading.value = false;
+    console.log(err);
   }
 }
 
 async function submitOtp(): Promise<void> {
-  error.value = '';
-  loading.value = true;
   try {
-    await auth.verifyOtp(otp.value);
+    const session = await verifyOtpMutation({
+      identifier: identifier.value,
+      otp: otp.value,
+    });
+    auth.setSession(session);
     const redirect = route.query.redirect;
     router.push(typeof redirect === 'string' ? redirect : { name: 'home' });
   } catch (err) {
-    error.value = (err as Partial<ApiError>).message || 'کد وارد شده نامعتبر است.';
-  } finally {
-    loading.value = false;
+    console.log(err);
   }
 }
 
 function backToIdentifier(): void {
   step.value = 'identifier';
   otp.value = '';
-  error.value = '';
 }
 </script>
 
 <template>
   <div class="login-page">
     <div class="login-card">
-      <h1 class="title">آروان واچ</h1>
-      <p class="subtitle">برای ادامه وارد حساب کاربری خود شوید</p>
+      <h1 class="title">Arvan Watch</h1>
+      <p class="subtitle">Sign in to your account to continue</p>
 
       <form v-if="step === 'identifier'" class="form" @submit.prevent="submitIdentifier">
         <label class="field">
-          <span class="field-label">ایمیل یا شماره موبایل</span>
+          <span class="field-label">Email or phone number</span>
           <input
             v-model="identifier"
             class="focusable input"
@@ -68,18 +74,19 @@ function backToIdentifier(): void {
             placeholder="you@example.com"
           />
         </label>
-        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="requestOtpError" class="error">{{ requestOtpError.message }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
-          {{ loading ? 'در حال ارسال...' : 'دریافت کد یکبار مصرف' }}
+          {{ loading ? 'Sending...' : 'Get one-time code' }}
         </button>
       </form>
 
       <form v-else class="form" @submit.prevent="submitOtp">
         <p class="hint">
-          کد یکبار مصرف برای <strong>{{ identifier }}</strong> ارسال شد.
+          A one-time code was sent to <strong>{{ identifier }}</strong
+          >.
         </p>
         <label class="field">
-          <span class="field-label">کد تایید</span>
+          <span class="field-label">Verification code</span>
           <input
             v-model="otp"
             class="focusable input otp-input"
@@ -92,11 +99,11 @@ function backToIdentifier(): void {
             autofocus
           />
         </label>
-        <p v-if="error" class="error">{{ error }}</p>
+        <p v-if="verifyOtpError" class="error">{{ verifyOtpError.message }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
-          {{ loading ? 'در حال ورود...' : 'تایید و ورود' }}
+          {{ loading ? 'Signing in...' : 'Verify and sign in' }}
         </button>
-        <button class="focusable ghost-btn" type="button" @click="backToIdentifier">بازگشت</button>
+        <button class="focusable ghost-btn" type="button" @click="backToIdentifier">Back</button>
       </form>
     </div>
   </div>

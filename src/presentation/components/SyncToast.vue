@@ -6,7 +6,7 @@ defineProps<{ detail: string }>();
   <div class="sync-toast">
     <span class="check">✓</span>
     <div class="text">
-      <div class="title">وضعیت تماشا ذخیره شد</div>
+      <div class="title">Watch status saved</div>
       <div class="detail">{{ detail }}</div>
     </div>
   </div>
