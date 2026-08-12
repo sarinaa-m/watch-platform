@@ -10,10 +10,8 @@ import {
 import { onBeforeRouteLeave } from 'vue-router';
 import { isFatalApiError } from '@infra/api/httpClient';
 import { useMovieItem } from '@application/usecases/movieUseCases';
-import {
-  useVideoProgress,
-  useSyncProgressMutation,
-} from '@application/usecases/watchProgressUseCases';
+import { useSyncProgressMutation } from '@application/usecases/watchProgressUseCases';
+import { useVideoProgress } from '@presentation/composables/useVideoProgress';
 import type VideoPlayer from '@presentation/components/VideoPlayer.vue';
 
 const SYNC_INTERVAL_MS = 8000;

@@ -2,8 +2,8 @@
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useMovieItem } from '@application/usecases/movieUseCases';
-import { useVideoProgress } from '@application/usecases/watchProgressUseCases';
 import { usePlaybackStatusLabels } from '@presentation/composables/usePlaybackStatusLabels';
+import { useVideoProgress } from '@presentation/composables/useVideoProgress';
 import MediaBackdrop from '@presentation/components/MediaBackdrop.vue';
 import ProgressBar from '@presentation/components/ProgressBar.vue';
 import QueryState from '@presentation/components/QueryState.vue';
