@@ -1,9 +1,5 @@
 import { computed, reactive, readonly } from 'vue';
-import {
-  requestOtpUseCase,
-  verifyOtpUseCase,
-  fetchCurrentUserUseCase,
-} from '@application/usecases/authUseCases';
+import type { Session } from '@domain/entities/session';
 import { setTokenProvider } from '@infra/api/httpClient';
 import { loadStoredSession, persistSession } from '@shared/utils/sessionStorage';
 
@@ -11,7 +7,6 @@ interface AuthState {
   token: string | null;
   identifier: string | null;
   expiresAt: number | null;
-  pendingIdentifier: string | null;
 }
 
 const session = loadStoredSession();
@@ -20,7 +15,6 @@ const state = reactive<AuthState>({
   token: session?.token ?? null,
   identifier: session?.identifier ?? null,
   expiresAt: session?.expiresAt ?? null,
-  pendingIdentifier: null,
 });
 
 /**
@@ -78,26 +72,12 @@ function persist(): void {
   );
 }
 
-async function requestOtp(identifier: string): Promise<void> {
-  await requestOtpUseCase(identifier);
-  state.pendingIdentifier = identifier;
-}
-
-async function verifyOtp(otp: string): Promise<void> {
-  const identifier = state.pendingIdentifier ?? '';
-  const session = await verifyOtpUseCase(identifier, otp);
+function setSession(session: Session): void {
   state.token = session.token;
   state.identifier = session.identifier;
   state.expiresAt = session.expiresAt;
-  state.pendingIdentifier = null;
   persist();
   scheduleExpiry();
-}
-
-async function fetchCurrentUser(): Promise<void> {
-  if (!state.token) return;
-  state.identifier = await fetchCurrentUserUseCase();
-  persist();
 }
 
 function logout(): void {
@@ -105,7 +85,6 @@ function logout(): void {
   state.token = null;
   state.identifier = null;
   state.expiresAt = null;
-  state.pendingIdentifier = null;
   persist();
   // Drop everything scoped to the session that just ended, so the next
   // login can't briefly render the previous user's data.
@@ -119,9 +98,7 @@ export function useAuth() {
   return {
     state: readonly(state),
     isAuthenticated,
-    requestOtp,
-    verifyOtp,
-    fetchCurrentUser,
+    setSession,
     logout,
   };
 }

@@ -8,7 +8,7 @@ import type { UpdateWatchingDTO } from '@domain/ports';
 export function useContinueWatchingQuery() {
   const auth = useAuth();
   return useQuery({
-    queryKey: watchProgressKeys.all,
+    queryKey: watchProgressKeys.continueWatching(),
     queryFn: () => watchProgressRepository.getContinueWatching(),
     enabled: computed(() => auth.isAuthenticated.value),
   });
