@@ -5,7 +5,6 @@ export default {
     nav: {
       home: 'Home',
       continueWatching: 'Continue Watching',
-      search: 'Search',
     },
   },
   common: {
@@ -36,12 +35,13 @@ export default {
   home: {
     continueWatchingTitle: 'Continue Watching',
     continueWatchingHint: 'Saved on the server',
-    allVideosTitle: 'All Videos',
-    allVideosHint: 'Full course list',
+    myListTitle: 'My List',
+    myListHint: 'Your full catalog',
+    moreInfo: 'More Info',
+    emptyCatalog: 'No videos available yet.',
   },
   search: {
     placeholder: 'Search for a course or topic…',
-    queryPrefix: '"{query}" — ',
     resultsCount: '{count} results',
   },
   title: {

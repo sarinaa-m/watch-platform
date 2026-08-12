@@ -5,7 +5,6 @@ export default {
     nav: {
       home: 'خانه',
       continueWatching: 'ادامه تماشا',
-      search: 'جست‌وجو',
     },
   },
   common: {
@@ -36,12 +35,13 @@ export default {
   home: {
     continueWatchingTitle: 'ادامه تماشا',
     continueWatchingHint: 'روی سرور ذخیره شده',
-    allVideosTitle: 'همه ویدیوها',
-    allVideosHint: 'فهرست کامل دوره‌ها',
+    myListTitle: 'لیست من',
+    myListHint: 'کل فهرست شما',
+    moreInfo: 'اطلاعات بیشتر',
+    emptyCatalog: 'هنوز ویدیویی موجود نیست.',
   },
   search: {
     placeholder: 'جست‌وجوی دوره یا موضوع…',
-    queryPrefix: '«{query}» — ',
     resultsCount: '{count} نتیجه',
   },
   title: {

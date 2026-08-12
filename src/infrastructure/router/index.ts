@@ -25,11 +25,6 @@ const routes: RouteRecordRaw[] = [
     component: () => import('@presentation/pages/ContinueWatchingPage.vue'),
   },
   {
-    path: PATHS.search.path,
-    name: PATHS.search.name,
-    component: () => import('@presentation/pages/SearchPage.vue'),
-  },
-  {
     path: PATHS.title.path,
     name: PATHS.title.name,
     component: () => import('@presentation/pages/TitlePage.vue'),
