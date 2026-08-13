@@ -9,6 +9,7 @@ import {
 } from 'vue';
 import { onBeforeRouteLeave } from 'vue-router';
 import { isFatalApiError } from '@shared/api/apiError';
+import { onBeforeLogout } from '@infra/state/authState';
 import { useMovieItem } from '@application/usecases/movieUseCases';
 import { useSyncProgressMutation } from '@application/usecases/watchProgressUseCases';
 import { useVideoProgress } from '@presentation/composables/useVideoProgress';
@@ -82,6 +83,12 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
     }
   });
 
+  const removeBeforeLogoutHook = onBeforeLogout(() => {
+    if (lastKnownPosition > 0) {
+      return syncProgress(lastKnownPosition);
+    }
+  });
+
   function togglePlay(): void {
     if (!paused.value) {
       playerRef.value?.pause();
@@ -127,6 +134,7 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   onBeforeUnmount(() => {
     window.removeEventListener('beforeunload', handleBeforeUnload);
     stopSync();
+    removeBeforeLogoutHook();
   });
 
   return {
