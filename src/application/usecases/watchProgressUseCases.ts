@@ -1,32 +1,40 @@
+import { computed } from 'vue';
 import { watchProgressRepository } from '@infra/adapters/watchProgressRepositoryImpl';
+import { useAuth } from '@infra/state/authState';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/vue-query';
 import { watchProgressKeys } from '@shared/api/queryKeys';
 import type { ContinueWatchingResponse, UpdateWatchingDTO } from '@domain/watchProgress';
 
 export function useContinueWatchingQuery() {
+  const auth = useAuth();
   return useQuery({
-    queryKey: watchProgressKeys.continueWatching(),
+    queryKey: computed(() => watchProgressKeys.continueWatching(auth.state.identifier ?? '')),
     queryFn: () => watchProgressRepository.getContinueWatching(),
+    enabled: computed(() => auth.isAuthenticated.value),
+    select(data) {
+      //based on what in openapi.yaml the response is always one item
+      return data.data?.[0];
+    },
   });
 }
 
 export function useSyncProgressMutation() {
+  const auth = useAuth();
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (dto: UpdateWatchingDTO) => watchProgressRepository.updateWatchProgress(dto),
-    onSuccess: (entry) => {
+    mutationFn: async (dto: UpdateWatchingDTO) => {
+      const identifier = auth.state.identifier;
+      const entry = await watchProgressRepository.updateWatchProgress(dto);
+      return { identifier, entry };
+    },
+    onSuccess: ({ identifier, entry }) => {
+      if (!identifier) return;
       queryClient.setQueryData<ContinueWatchingResponse>(
-        watchProgressKeys.continueWatching(),
+        watchProgressKeys.continueWatching(identifier),
         (old) => {
           if (!old) return old;
-          const index = old.data.findIndex((e) => e.video_id === entry.video_id);
-          const data = [...old.data];
-          if (index >= 0) {
-            data[index] = entry;
-          } else {
-            data.unshift(entry);
-          }
-          return { data, total: index >= 0 ? old.total : old.total + 1 };
+
+          return { ...old, data: [entry] };
         }
       );
     },

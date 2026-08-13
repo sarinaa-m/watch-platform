@@ -12,6 +12,13 @@ export default {
     back: 'بازگشت',
     unknown: '؟',
   },
+  health: {
+    checking: 'در حال بررسی وضعیت سرویس...',
+    unavailableTitle: 'سرویس در دسترس نیست',
+    unavailableMessage:
+      'اتصال به سرویس آروان واچ برقرار نشد. لطفاً اتصال خود را بررسی کرده و دوباره تلاش کنید.',
+    retry: 'تلاش مجدد',
+  },
   login: {
     title: 'آروان واچ',
     subtitle: 'برای ادامه وارد حساب کاربری خود شوید',
@@ -43,6 +50,7 @@ export default {
   search: {
     placeholder: 'جست‌وجوی دوره یا موضوع…',
     resultsCount: '{count} نتیجه',
+    noResults: 'عنوانی با «{query}» مطابقت ندارد.',
   },
   title: {
     episodes: 'قسمت‌ها',
