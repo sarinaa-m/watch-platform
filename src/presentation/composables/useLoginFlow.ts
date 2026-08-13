@@ -2,6 +2,7 @@ import { computed, ref } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useAuth } from '@infra/state/authState';
 import { useRequestOtpMutation, useVerifyOtpMutation } from '@application/usecases/authUseCases';
+import { sanitizerNumber } from '@shared/utils/sanitizerNumber';
 
 export function useLoginFlow() {
   const auth = useAuth();
@@ -18,7 +19,13 @@ export function useLoginFlow() {
 
   const step = ref<'identifier' | 'otp'>('identifier');
   const identifier = ref('');
-  const otp = ref('');
+  const otpRaw = ref('');
+  const otp = computed({
+    get: () => otpRaw.value,
+    set: (value: string) => {
+      otpRaw.value = sanitizerNumber(value).replace(/\D/g, '').slice(0, 6);
+    },
+  });
   const loading = computed(() => isPending.value || verifyOtpPending.value);
 
   function submitIdentifier(): void {

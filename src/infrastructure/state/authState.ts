@@ -29,6 +29,29 @@ export function onLogout(hook: LogoutHook): void {
   logoutHooks.push(hook);
 }
 
+type BeforeLogoutHook = () => Promise<unknown> | void;
+const beforeLogoutHooks: BeforeLogoutHook[] = [];
+
+export function onBeforeLogout(hook: BeforeLogoutHook): () => void {
+  beforeLogoutHooks.push(hook);
+  return () => {
+    const index = beforeLogoutHooks.indexOf(hook);
+    if (index >= 0) beforeLogoutHooks.splice(index, 1);
+  };
+}
+
+async function runBeforeLogoutHooks(): Promise<void> {
+  await Promise.all(
+    beforeLogoutHooks.map(async (hook) => {
+      try {
+        await hook();
+      } catch {
+        // best-effort flush; logout proceeds regardless
+      }
+    })
+  );
+}
+
 let expiryTimer: ReturnType<typeof setTimeout> | null = null;
 
 function clearExpiryTimer(): void {
@@ -65,7 +88,8 @@ function setSession(session: Session): void {
   scheduleExpiry();
 }
 
-function logout(): void {
+async function logout(): Promise<void> {
+  await runBeforeLogoutHooks();
   clearExpiryTimer();
   state.token = null;
   state.identifier = null;
