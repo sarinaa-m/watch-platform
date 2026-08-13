@@ -9,10 +9,17 @@ import { initialsOf } from '@shared/utils/initials';
 import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 import SearchBox from '@presentation/components/SearchBox.vue';
 import { useTopbarSearch } from '@presentation/composables/useTopbarSearch';
+import { useHealthQuery } from '@application/usecases/healthUseCases';
 const auth = useAuth();
 const route = useRoute();
 const { t } = useI18n();
 const locale = useLocale();
+
+const {
+  isPending: isHealthPending,
+  isError: isHealthError,
+  refetch: retryHealthCheck,
+} = useHealthQuery();
 
 const showChrome = computed(() => auth.isAuthenticated.value && !route.meta.hideChrome);
 
@@ -34,55 +41,95 @@ function handleLogout(): void {
 </script>
 
 <template>
-  <div class="shell">
-    <header v-if="showChrome" class="topbar">
-      <router-link :to="{ name: 'home' }" class="brand">{{ t('app.brand') }}</router-link>
-
-      <nav class="nav-pills">
-        <router-link
-          v-for="item in navItems"
-          :key="item.name"
-          :to="{ name: item.name }"
-          class="focusable pill"
-          :class="{ active: route.name === item.name }"
-        >
-          {{ item.label }}
-        </router-link>
-      </nav>
-
-      <SearchBox v-model="searchQuery" />
-
-      <div class="topbar-right">
-        <div class="locale-switch">
-          <button
-            v-for="option in LOCALE_OPTIONS"
-            :key="option.value"
-            class="focusable locale-btn"
-            :class="{ active: locale.state.locale === option.value }"
-            tabindex="0"
-            type="button"
-            @click="locale.setLocale(option.value)"
-          >
-            {{ option.label }}
-          </button>
-        </div>
-        <button class="focusable logout-btn" tabindex="0" @click="handleLogout">
-          {{ t('app.logout') }}
-        </button>
-        <router-link :to="{ name: 'profile' }" class="focusable account-link" tabindex="0">
-          <span class="avatar">{{ initialsOf(auth.state.identifier) }}</span>
-          <span class="account-name">{{ auth.state.identifier }}</span>
-        </router-link>
-      </div>
-    </header>
-    <main class="content" :class="{ 'content--full': !showChrome }">
-      <router-view />
-    </main>
+  <div v-if="isHealthPending" class="boot-status">
+    <p>{{ $t('health.checking') }}</p>
   </div>
-  <VueQueryDevtools />
+  <div v-else-if="isHealthError" class="boot-status">
+    <h1>{{ $t('health.unavailableTitle') }}</h1>
+    <p>{{ $t('health.unavailableMessage') }}</p>
+    <button class="focusable retry-btn" type="button" @click="() => retryHealthCheck()">
+      {{ $t('health.retry') }}
+    </button>
+  </div>
+  <template v-else>
+    <div class="shell">
+      <header v-if="showChrome" class="topbar">
+        <router-link :to="{ name: 'home' }" class="brand">{{ t('app.brand') }}</router-link>
+
+        <nav class="nav-pills">
+          <router-link
+            v-for="item in navItems"
+            :key="item.name"
+            :to="{ name: item.name }"
+            class="focusable pill"
+            :class="{ active: route.name === item.name }"
+          >
+            {{ item.label }}
+          </router-link>
+        </nav>
+
+        <SearchBox v-model="searchQuery" />
+
+        <div class="topbar-right">
+          <div class="locale-switch">
+            <button
+              v-for="option in LOCALE_OPTIONS"
+              :key="option.value"
+              class="focusable locale-btn"
+              :class="{ active: locale.state.locale === option.value }"
+              tabindex="0"
+              type="button"
+              @click="locale.setLocale(option.value)"
+            >
+              {{ option.label }}
+            </button>
+          </div>
+          <button class="focusable logout-btn" tabindex="0" @click="handleLogout">
+            {{ t('app.logout') }}
+          </button>
+          <router-link :to="{ name: 'profile' }" class="focusable account-link" tabindex="0">
+            <span class="avatar">{{ initialsOf(auth.state.identifier) }}</span>
+            <span class="account-name">{{ auth.state.identifier }}</span>
+          </router-link>
+        </div>
+      </header>
+      <main class="content" :class="{ 'content--full': !showChrome }">
+        <router-view />
+      </main>
+    </div>
+    <VueQueryDevtools />
+  </template>
 </template>
 
 <style scoped>
+.boot-status {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+
+.retry-btn {
+  background: var(--color-accent);
+  color: var(--color-text);
+  border: none;
+  padding: 12px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter 0.15s ease;
+}
+
+.retry-btn:hover,
+.retry-btn:focus-visible {
+  filter: brightness(1.1);
+}
+
 .shell {
   display: flex;
   flex-direction: column;

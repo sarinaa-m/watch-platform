@@ -33,7 +33,7 @@ export const useVerifyOtpMutation = () => {
 export const useCurrentUserQuery = () => {
   const auth = useAuth();
   return useQuery({
-    queryKey: authKeys.currentUser(),
+    queryKey: computed(() => authKeys.currentUser(auth.state.identifier ?? '')),
     queryFn: () => authRepository.getCurrentUser(),
     enabled: computed(() => auth.isAuthenticated.value),
   });

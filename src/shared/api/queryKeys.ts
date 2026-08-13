@@ -6,9 +6,14 @@ export const movieKeys = {
 
 export const watchProgressKeys = {
   all: ['watchProgress'] as const,
-  continueWatching: () => [...watchProgressKeys.all, 'continueWatching'] as const,
+  continueWatching: (identifier: string) =>
+    [...watchProgressKeys.all, 'continueWatching', identifier] as const,
 };
 export const authKeys = {
   all: ['auth'] as const,
-  currentUser: () => [...authKeys.all, 'currentUser'] as const,
+  currentUser: (identifier: string) => [...authKeys.all, 'currentUser', identifier] as const,
+};
+export const healthKeys = {
+  all: ['health'] as const,
+  status: () => [...healthKeys.all, 'status'] as const,
 };

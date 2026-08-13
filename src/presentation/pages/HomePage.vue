@@ -26,7 +26,7 @@ const isFeaturedContinueWatching = computed(() => continueWatchingMovies.value.l
 
 const searchQuery = computed(() => search.state.query.trim());
 const filteredCatalog = computed(() =>
-  filterMoviesByQuery(restOfCatalog.value, search.state.query)
+  searchQuery.value ? filterMoviesByQuery(movies.value, search.state.query) : restOfCatalog.value
 );
 const myListHint = computed(() =>
   searchQuery.value
@@ -78,6 +78,9 @@ function playMovie(id: number | undefined): void {
       </Rail>
 
       <Rail :title="$t('home.myListTitle')" :hint="myListHint" layout="grid">
+        <p v-if="searchQuery && !filteredCatalog.length" class="status">
+          {{ $t('search.noResults', { query: searchQuery }) }}
+        </p>
         <VideoCard
           v-for="movie in filteredCatalog"
           :key="movie.id"

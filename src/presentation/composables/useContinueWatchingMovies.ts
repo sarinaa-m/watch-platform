@@ -21,18 +21,15 @@ export function useContinueWatchingMovies() {
   const error = computed(() => continueWatchingError.value ?? moviesError.value);
 
   const items = computed<ContinueWatchingMovie[]>(() => {
-    const entries = continueWatching.value?.data ?? [];
-    return entries
-      .map((entry) => {
-        const movie = movies.value.find((m) => m.id === entry.video_id);
-        return movie ? { movie, progressPercent: entry.progress_percentage } : null;
-      })
-      .filter((item): item is ContinueWatchingMovie => item !== null);
+    const entry = continueWatching.value;
+    if (!entry) return [];
+    const movie = movies.value.find((m) => m.id === entry.video_id);
+    return movie ? [{ movie, progressPercent: entry.progress_percentage }] : [];
   });
 
   const restOfCatalog = computed<Movie[]>(() => {
-    const continueWatchingIds = new Set(items.value.map((item) => item.movie.id));
-    return movies.value.filter((m) => !continueWatchingIds.has(m.id));
+    const currentId = items.value?.[0]?.movie.id;
+    return movies.value.filter((m) => m.id !== currentId);
   });
 
   function progressFor(movieId: number | undefined): number {

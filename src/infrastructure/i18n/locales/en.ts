@@ -12,6 +12,13 @@ export default {
     back: 'Back',
     unknown: '?',
   },
+  health: {
+    checking: 'Checking service status...',
+    unavailableTitle: 'Service unavailable',
+    unavailableMessage:
+      "We couldn't reach the Arvan Watch service. Please check your connection and try again.",
+    retry: 'Retry',
+  },
   login: {
     title: 'Arvan Watch',
     subtitle: 'Sign in to your account to continue',
@@ -43,6 +50,7 @@ export default {
   search: {
     placeholder: 'Search for a course or topic…',
     resultsCount: '{count} results',
+    noResults: 'No titles match "{query}".',
   },
   title: {
     episodes: 'Episodes',

@@ -14,7 +14,7 @@ import { useSyncProgressMutation } from '@application/usecases/watchProgressUseC
 import { useVideoProgress } from '@presentation/composables/useVideoProgress';
 import type VideoPlayer from '@presentation/components/VideoPlayer.vue';
 
-const SYNC_INTERVAL_MS = 8000;
+const SYNC_INTERVAL_MS = 10_000;
 
 export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   const videoId = computed(() => Number(toValue(id)));
@@ -100,10 +100,14 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   }
 
   function seekBar(e: MouseEvent): void {
+    if (!Number.isFinite(duration.value) || duration.value <= 0) return;
     const track = e.currentTarget as HTMLElement;
     const rect = track.getBoundingClientRect();
     const fraction = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
-    playerRef.value?.seekTo(fraction * duration.value);
+    const targetTime = fraction * duration.value;
+    playerRef.value?.seekTo(targetTime);
+    lastKnownPosition = targetTime;
+    syncProgress(targetTime).catch(handleSyncError);
   }
 
   onMounted(() => {
