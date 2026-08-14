@@ -3,8 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://streaming-dashboard.objectstorage-h0um1.arvanedge.ir}
     ports:
       - '8080:80'
-    environment:
-      - VITE_API_BASE_URL=${VITE_API_BASE_URL:-https://streaming-dashboard.objectstorage-h0um1.arvanedge.ir}
     restart: unless-stopped

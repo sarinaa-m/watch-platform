@@ -135,7 +135,7 @@ composables — never to `fetch`/axios or the query cache directly.
 
 ```
 src/
-├── config/                 # env.config.ts — runtime + build-time env access
+├── config/                 # env.config.ts — build-time env access
 ├── domain/                    # Movie, Session, WatchProgress, UpdateWatchingDTO — plain types, no barrel
 ├── application/usecases/      # business logic: auth, movie, watch-progress use cases
 ├── infrastructure/
@@ -154,7 +154,7 @@ src/
 │   ├── api/                                       # queryKeys, ApiError type + guards
 │   ├── utils/                                       # cross-cutting helpers (session localStorage)
 │   └── types/                                         # ambient module augmentations (vue-router meta)
-└── vite-env.d.ts                                        # ImportMetaEnv + window._env_ typing
+└── vite-env.d.ts                                        # ImportMetaEnv typing
 ```
 
 Path aliases (`@config`, `@domain`, `@application`, `@infra`,
@@ -182,10 +182,9 @@ is a sign it belongs in `usecases` instead.
 - **TypeScript**, checked with `vue-tsc` (`npm run typecheck`); `npm run build` type-checks before bundling.
 - **Husky + lint-staged** run ESLint and Prettier on staged files pre-commit.
 - **commitlint** (conventional commits) checks commit messages via a `commit-msg` hook.
-- **Docker**: multi-stage `Dockerfile` (Vite build → nginx) with runtime
-  env injection — `env.sh` reads `.env` into `public/env-config.js`
-  (`window._env_`) at container start so one image can be reconfigured
-  per environment. `docker-compose.yml` runs it on port 8080.
+- **Docker**: multi-stage `Dockerfile` (Vite build → nginx). `VITE_API_BASE_URL`
+  is passed as a build arg and baked into the bundle at `vite build` time, so
+  changing it requires a rebuild. `docker-compose.yml` runs it on port 8080.
 
 ## Design notes
 

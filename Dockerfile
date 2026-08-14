@@ -1,6 +1,9 @@
 # Stage 1: Build
 FROM node:20-alpine AS builder
 
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 WORKDIR /app
 
 COPY package.json package-lock.json ./
@@ -17,12 +20,8 @@ COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /app/build /usr/share/nginx/html
 
-COPY .env /usr/share/nginx/html/.env
-COPY env.sh /usr/share/nginx/html/env.sh
-RUN chmod +x /usr/share/nginx/html/env.sh
-
 WORKDIR /usr/share/nginx/html
 
 EXPOSE 80
 
-CMD ["/bin/sh", "-c", "./env.sh && nginx -g 'daemon off;'"]
+CMD ["nginx", "-g", "daemon off;"]

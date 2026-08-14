@@ -1,5 +1,5 @@
 const getEnvVar = (key: keyof ImportMetaEnv): string => {
-  return (window._env_?.[key] || import.meta.env[key]) ?? '';
+  return import.meta.env[key] ?? '';
 };
 
 const baseApiUrl = getEnvVar('VITE_API_BASE_URL');
