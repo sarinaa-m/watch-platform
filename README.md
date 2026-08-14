@@ -7,9 +7,10 @@ usable from a smart TV browser via keyboard/remote arrow-key navigation.
 ## Stack
 
 - Vue 3 (`<script setup lang="ts">`) + TypeScript + Vite
-- Vue reactive composables for shared state (auth session, UI gate, watch progress)
+- Vue reactive composables for shared state (auth session, locale, search)
 - Vue Router with auth guards
 - hls.js for HLS playback (falls back to native HLS on Safari)
+- vue-i18n for English/Farsi localization, with an RTL toggle on the Farsi locale
 
 ## Getting started
 
@@ -82,17 +83,20 @@ npm run preview   # serve the build locally to sanity-check it
   The mutation seeds the cache with the server's response, so the
   `progress_percentage` / `completed` values shown are always the server's.
 - While a video plays, `PUT /watch-progress` is called:
-  - every 8 seconds during playback (`src/presentation/pages/WatchPage.vue`),
+  - every 10 seconds during playback
+    (`src/presentation/composables/useWatchPlayer.ts`),
   - immediately on pause,
   - immediately on route leave (going back to the catalog),
   - best-effort on `beforeunload` (closing the tab) — routed through
     `httpClient` with `keepalive: true`, since `sendBeacon` can't set an
     `Authorization` header.
-- `GET /movies/{id}` position is only used to resume playback when the
-  requested video matches the server's current continue-watching entry;
-  otherwise playback starts at 0.
-- `GET /continue-watching` returns an array of exactly 0 or 1 entries, so
-  `total: 0` is a normal empty state, not an error.
+- Resume position comes from the continue-watching cache, not the movie
+  detail endpoint — `GET /movies/{id}` carries no position data. Playback
+  resumes only when the requested video matches the server's current
+  continue-watching entry; otherwise it starts at 0.
+- `GET /continue-watching` always returns exactly one entry — per the spec,
+  a new user starts at video 1, position 10 seconds — so there's no empty
+  state to handle.
 
 ### Error handling policy
 
@@ -109,7 +113,7 @@ What each status means for the UI:
 | `415 unsupported_media_type` | missing JSON `Content-Type`                                                                      | unreachable via `httpClient`, which always sets it |
 | `0 network_error`            | offline / unreachable                                                                            | retryable; the sync loop keeps trying              |
 
-The 8-second watch-progress loop uses `isFatalApiError` to stop on any 4xx
+The 10-second watch-progress loop uses `isFatalApiError` to stop on any 4xx
 rather than hammering the API with a request that can never succeed, while
 letting transient network failures retry on the next tick.
 
@@ -120,8 +124,8 @@ letting transient network failures retry on the next tick.
   arrow keys move focus based on actual on-screen row/column position
   — this is what a TV remote's directional pad sends.
 - The video player (`src/presentation/components/VideoPlayer.vue`)
-  supports Space/Enter to play-pause and Left/Right to seek ±10s, in
-  addition to native `<video controls>`.
+  supports Space/Enter to play-pause and Left/Right to seek ±10s, via a
+  fully custom control bar (no native `<video controls>`).
 - Every interactive element has a visible focus ring
   (`:focus-visible` in `src/presentation/styles/base.css`), which
   matters for 10-foot UI navigated without a mouse.
@@ -136,25 +140,31 @@ composables — never to `fetch`/axios or the query cache directly.
 ```
 src/
 ├── config/                 # env.config.ts — build-time env access
-├── domain/                    # Movie, Session, WatchProgress, UpdateWatchingDTO — plain types, no barrel
-├── application/usecases/      # business logic: auth, movie, watch-progress use cases
+├── domain/                    # Movie, Session, WatchProgress, UpdateWatchingDTO, Health — plain types, no barrel
+├── application/usecases/      # business logic: auth, movie, watch-progress, health use cases
 ├── infrastructure/
 │   ├── api/httpClient.ts        # thin fetch wrapper (base URL, ambient auth header, 401 handling)
 │   ├── adapters/                  # repository objects backed by httpClient
-│   ├── query/                       # vue-query client config
-│   ├── router/                        # route table + auth guard
-│   └── state/                           # Vue reactive composables: auth, locale, search
+│   ├── i18n/                        # vue-i18n setup + en/fa message catalogs
+│   ├── query/                         # vue-query client config
+│   ├── router/                          # route table + auth guard
+│   └── state/                             # Vue reactive composables: auth, locale, search
 ├── presentation/
-│   ├── components/                        # VideoCard, VideoPlayer (hls.js), FocusableGrid
-│   ├── composables/                          # derived/selector logic over cached query data,
-│   │                                            DOM/player orchestration (see rule below)
-│   ├── pages/                                  # LoginPage, HomePage, WatchPage
-│   └── styles/base.css                          # design tokens + global styles
+│   ├── components/                          # VideoCard, VideoPlayer (hls.js), FocusableGrid,
+│   │                                           HeroBanner, Rail, SearchBox, ProgressBar,
+│   │                                           MediaBackdrop, QueryState, plus skeletons/
+│   ├── composables/                            # derived/selector logic over cached query data,
+│   │                                              DOM/player orchestration (see rule below)
+│   ├── pages/                                    # LoginPage, HomePage, TitlePage, WatchPage,
+│   │                                                ContinueWatchingPage, ProfilePage, NotFoundPage
+│   └── styles/base.css                             # design tokens + global styles
 ├── shared/
-│   ├── api/                                       # queryKeys, ApiError type + guards
-│   ├── utils/                                       # cross-cutting helpers (session localStorage)
-│   └── types/                                         # ambient module augmentations (vue-router meta)
-└── vite-env.d.ts                                        # ImportMetaEnv typing
+│   ├── api/                                          # queryKeys, ApiError type + guards
+│   ├── utils/                                          # session storage, time/number formatting, initials
+│   └── types/                                            # ambient module augmentations (vue-router meta)
+├── App.vue                                                 # health-check gate + shell (topbar, locale switch)
+├── main.ts                                                   # app bootstrap (query client, i18n, router)
+└── vite-env.d.ts                                               # ImportMetaEnv typing
 ```
 
 Path aliases (`@config`, `@domain`, `@application`, `@infra`,
@@ -190,8 +200,10 @@ is a sign it belongs in `usecases` instead.
 
 The visual identity (deep teal background, ArvanCloud pink accent,
 Vazirmatn typeface) is drawn directly from the ArvanCloud challenge
-deck rather than a generic dark theme, and the UI is RTL throughout
-since the brief and API examples are Persian-first.
+deck rather than a generic dark theme. The UI is bilingual
+(English/Farsi, via vue-i18n in `src/infrastructure/i18n/`) and defaults
+to English/LTR; switching to Farsi flips the layout to RTL, since the
+brief and API examples are Persian-first.
 
 ## Known limitations / next steps
 
