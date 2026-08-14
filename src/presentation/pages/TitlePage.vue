@@ -14,7 +14,8 @@ const props = defineProps<{ id: string | number }>();
 const router = useRouter();
 const progress = useVideoProgress(() => Number(props.id));
 const progressPercent = computed(() => progress.value.progressPercent);
-const { statusLabel, playLabel } = usePlaybackStatusLabels(progressPercent);
+const completed = computed(() => progress.value.completed);
+const { statusLabel, playLabel } = usePlaybackStatusLabels(progressPercent, completed);
 
 function play(): void {
   router.push({ name: 'watch', params: { id: props.id } });

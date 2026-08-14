@@ -9,6 +9,7 @@ export function useVideoProgress(id: MaybeRefOrGetter<number>) {
     return {
       progressPercent: entry?.progress_percentage ?? 0,
       positionSeconds: entry?.position_seconds ?? 0,
+      completed: entry?.completed ?? false,
     };
   });
 }
