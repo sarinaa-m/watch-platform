@@ -6,7 +6,3 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
-
-interface Window {
-  _env_?: Record<string, string>;
-}

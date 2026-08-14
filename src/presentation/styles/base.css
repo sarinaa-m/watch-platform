@@ -122,7 +122,9 @@ a {
   background: var(--color-surface);
   border-radius: 999px;
 }
-
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;
