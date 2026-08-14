@@ -38,6 +38,12 @@ const routes: RouteRecordRaw[] = [
     props: true,
     meta: { hideChrome: true },
   },
+  {
+    path: PATHS.notFound.path,
+    name: PATHS.notFound.name,
+    component: () => import('@presentation/pages/NotFoundPage.vue'),
+    meta: { public: true, hideChrome: true },
+  },
 ];
 
 export const router = createRouter({

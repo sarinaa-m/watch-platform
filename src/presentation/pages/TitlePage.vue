@@ -171,4 +171,25 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
   font-size: 0.85rem;
   color: var(--color-text-muted);
 }
+
+@media (max-width: 640px) {
+  .episode-row {
+    grid-template-columns: 32px 1fr;
+    grid-template-areas:
+      'num meta'
+      'thumb thumb';
+  }
+
+  .episode-num {
+    grid-area: num;
+  }
+
+  .episode-thumb {
+    grid-area: thumb;
+  }
+
+  .episode-meta {
+    grid-area: meta;
+  }
+}
 </style>

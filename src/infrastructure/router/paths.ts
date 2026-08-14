@@ -5,4 +5,5 @@ export const PATHS = {
   continueWatching: { name: 'continueWatching', path: '/continue' },
   title: { name: 'title', path: '/title/:id' },
   watch: { name: 'watch', path: '/watch/:id' },
+  notFound: { name: 'notFound', path: '/:pathMatch(.*)*' },
 } as const;

@@ -59,5 +59,9 @@ withDefaults(defineProps<{ image: string; size?: 'lg' | 'md' }>(), { size: 'lg' 
   .backdrop--lg {
     min-height: 340px;
   }
+
+  .backdrop-content {
+    padding: var(--space-4);
+  }
 }
 </style>

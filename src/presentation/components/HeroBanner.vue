@@ -66,6 +66,7 @@ const { playLabel } = usePlaybackStatusLabels(() => props.progressPercent);
 .hero-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-1);
 }

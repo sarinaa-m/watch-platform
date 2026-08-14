@@ -39,6 +39,7 @@ import Skeleton from './Skeleton.vue';
 
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-3);
   margin-top: var(--space-1);
 }
@@ -46,6 +47,10 @@ import Skeleton from './Skeleton.vue';
 @media (max-width: 640px) {
   .hero {
     min-height: 340px;
+  }
+
+  .hero-content {
+    padding: var(--space-4);
   }
 }
 </style>

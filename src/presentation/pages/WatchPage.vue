@@ -171,11 +171,16 @@ const {
 .titles {
   display: grid;
   gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
 
 .titles .title {
   font-size: 1.15rem;
   font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .bottom-bar {
@@ -275,5 +280,22 @@ const {
     rgba(var(--color-shadow-rgb), 0.85),
     rgba(var(--color-shadow-rgb), 0)
   );
+}
+
+@media (max-width: 640px) {
+  .top-bar,
+  .bottom-bar {
+    inset-inline: var(--space-3);
+  }
+
+  .controls {
+    flex-wrap: wrap;
+    row-gap: var(--space-2);
+  }
+
+  .ctrl {
+    padding: 0 12px;
+    font-size: 0.8rem;
+  }
 }
 </style>

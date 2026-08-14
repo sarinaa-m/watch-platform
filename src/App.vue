@@ -10,6 +10,7 @@ import { VueQueryDevtools } from '@tanstack/vue-query-devtools';
 import SearchBox from '@presentation/components/SearchBox.vue';
 import { useTopbarSearch } from '@presentation/composables/useTopbarSearch';
 import { useHealthQuery } from '@application/usecases/healthUseCases';
+import { useCurrentUserQuery } from '@application/usecases/authUseCases';
 const auth = useAuth();
 const route = useRoute();
 const { t } = useI18n();
@@ -20,6 +21,8 @@ const {
   isError: isHealthError,
   refetch: retryHealthCheck,
 } = useHealthQuery();
+
+const { data: currentUser } = useCurrentUserQuery();
 
 const showChrome = computed(() => auth.isAuthenticated.value && !route.meta.hideChrome);
 
@@ -88,8 +91,10 @@ function handleLogout(): void {
             {{ t('app.logout') }}
           </button>
           <router-link :to="{ name: 'profile' }" class="focusable account-link" tabindex="0">
-            <span class="avatar">{{ initialsOf(auth.state.identifier) }}</span>
-            <span class="account-name">{{ auth.state.identifier }}</span>
+            <span class="avatar">{{
+              initialsOf(currentUser?.identifier ?? auth.state.identifier)
+            }}</span>
+            <span class="account-name">{{ currentUser?.identifier ?? auth.state.identifier }}</span>
           </router-link>
         </div>
       </header>
