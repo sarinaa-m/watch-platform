@@ -1,4 +1,4 @@
-# آروان واچ — Arvan Watch Platform
+Watch Platform
 
 Front-end for the ArvanCloud Front-End Challenge: OTP login, a 15-video
 catalog, an HLS player, and continue-watching sync — built to also be
