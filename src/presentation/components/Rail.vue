@@ -49,10 +49,8 @@ withDefaults(
 }
 
 .rail-row--row {
-  display: grid;
-  grid-template-columns: repeat(var(--rail-columns), 1fr);
-  gap: var(--space-1);
-  row-gap: var(--space-3);
+  display: flex;
+  gap: var(--space-3);
   overflow-x: auto;
   padding: var(--space-2);
 }

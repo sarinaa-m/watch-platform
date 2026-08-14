@@ -75,4 +75,25 @@ import Skeleton from './Skeleton.vue';
   display: grid;
   gap: var(--space-1);
 }
+
+@media (max-width: 640px) {
+  .episode-row {
+    grid-template-columns: 32px 1fr;
+    grid-template-areas:
+      'num meta'
+      'thumb thumb';
+  }
+
+  .episode-row > :nth-child(1) {
+    grid-area: num;
+  }
+
+  .episode-row > :nth-child(2) {
+    grid-area: thumb;
+  }
+
+  .episode-meta {
+    grid-area: meta;
+  }
+}
 </style>

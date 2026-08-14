@@ -19,6 +19,11 @@ export default {
       "We couldn't reach the Arvan Watch service. Please check your connection and try again.",
     retry: 'Retry',
   },
+  notFound: {
+    title: 'Page not found',
+    message: "The page you're looking for doesn't exist or may have been moved.",
+    backHome: 'Back to Home',
+  },
   login: {
     title: 'Arvan Watch',
     subtitle: 'Sign in to your account to continue',

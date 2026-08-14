@@ -38,9 +38,15 @@
 
   --card-aspect-rail: 16 / 9;
   --card-aspect-poster: 2 / 3;
-  --rail-columns: 5;
   --rail-item-width: 260px;
   --poster-min-width: 170px;
+}
+
+@media (max-width: 640px) {
+  :root {
+    --rail-item-width: 190px;
+    --poster-min-width: 130px;
+  }
 }
 
 *,
