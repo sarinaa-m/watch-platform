@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useLoginFlow } from '@presentation/composables/useLoginFlow';
+import { getApiErrorMessageKey } from '@shared/api/apiError';
 
 const {
   step,
@@ -34,7 +35,7 @@ const {
             placeholder="you@example.com"
           />
         </label>
-        <p v-if="requestOtpError" class="error">{{ requestOtpError.message }}</p>
+        <p v-if="requestOtpError" class="error">{{ $t(getApiErrorMessageKey(requestOtpError)) }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
           {{ loading ? $t('login.sendingCode') : $t('login.getCode') }}
         </button>
@@ -60,7 +61,7 @@ const {
             autofocus
           />
         </label>
-        <p v-if="verifyOtpError" class="error">{{ verifyOtpError.message }}</p>
+        <p v-if="verifyOtpError" class="error">{{ $t(getApiErrorMessageKey(verifyOtpError)) }}</p>
         <button class="focusable primary-btn" type="submit" :disabled="loading">
           {{ loading ? $t('login.signingIn') : $t('login.verifyAndSignIn') }}
         </button>

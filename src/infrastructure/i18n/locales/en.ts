@@ -24,6 +24,16 @@ export default {
     message: "The page you're looking for doesn't exist or may have been moved.",
     backHome: 'Back to Home',
   },
+  errors: {
+    validationError: 'The information provided is invalid. Please check and try again.',
+    unsupportedMediaType: 'Something went wrong while sending your request. Please try again.',
+    invalidOtp: 'The verification code is incorrect. Please try again.',
+    unauthorized: 'Your session has expired. Please sign in again.',
+    notFound: 'The requested item could not be found.',
+    networkError:
+      "We couldn't reach the Arvan Watch service. Please check your connection and try again.",
+    unknownError: 'Something went wrong. Please try again.',
+  },
   login: {
     title: 'Arvan Watch',
     subtitle: 'Sign in to your account to continue',

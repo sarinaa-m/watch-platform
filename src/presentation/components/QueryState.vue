@@ -1,11 +1,10 @@
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    pending: boolean;
-    error?: { message: string } | null;
-  }>(),
-  { error: null }
-);
+import { getApiErrorMessageKey } from '@shared/api/apiError';
+
+defineProps<{
+  pending: boolean;
+  error?: unknown;
+}>();
 </script>
 
 <template>
@@ -14,7 +13,7 @@ withDefaults(
       <p class="status">{{ $t('common.loading') }}</p>
     </slot>
   </template>
-  <p v-else-if="error" class="status error">{{ error.message }}</p>
+  <p v-else-if="error" class="status error">{{ $t(getApiErrorMessageKey(error)) }}</p>
   <slot v-else />
 </template>
 

@@ -4,6 +4,7 @@ import VideoPlayer from '@presentation/components/VideoPlayer.vue';
 import WatchPageSkeleton from '@presentation/components/skeletons/WatchPageSkeleton.vue';
 import { useWatchPlayer } from '@presentation/composables/useWatchPlayer';
 import { formatTime } from '@shared/utils/formatTime';
+import { getApiErrorMessageKey } from '@shared/api/apiError';
 import { Pause, Play, RotateCcw, RotateCw } from 'lucide-vue-next';
 
 const props = defineProps<{
@@ -36,7 +37,7 @@ const {
 <template>
   <div class="watch">
     <WatchPageSkeleton v-if="isPending" />
-    <p v-else-if="error" class="status error">{{ error.message }}</p>
+    <p v-else-if="error" class="status error">{{ $t(getApiErrorMessageKey(error)) }}</p>
 
     <template v-else-if="movie">
       <VideoPlayer
