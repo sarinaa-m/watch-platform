@@ -27,8 +27,10 @@ let hls: Hls | null = null;
 let seekApplied = false;
 
 function handleReady(): void {
-  if (props.startPosition > 0) seekTo(props.startPosition);
-  seekApplied = true;
+  if (props.startPosition > 0) {
+    seekTo(props.startPosition);
+    seekApplied = true;
+  }
   emit('ready');
   if (props.autoplay) void attemptAutoplay();
 }
@@ -175,9 +177,21 @@ watch(
   (position) => {
     if (seekApplied || position <= 0) return;
     const video = videoRef.value;
-    if (!video || !video.duration) return;
-    seekTo(position);
-    seekApplied = true;
+    if (!video) return;
+    if (video.duration) {
+      seekTo(position);
+      seekApplied = true;
+      return;
+    }
+    video.addEventListener(
+      'loadedmetadata',
+      () => {
+        if (seekApplied) return;
+        seekTo(props.startPosition);
+        seekApplied = true;
+      },
+      { once: true }
+    );
   }
 );
 

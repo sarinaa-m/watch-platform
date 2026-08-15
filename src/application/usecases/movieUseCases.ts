@@ -13,7 +13,8 @@ export const useMovieList = () => {
 export const useMovieItem = (id: MaybeRefOrGetter<string | number>) => {
   const movieId = computed(() => toValue(id));
   return useQuery({
-    queryKey: movieKeys.detail(movieId.value),
+    queryKey: computed(() => movieKeys.detail(movieId.value)),
     queryFn: () => movieListRepository.getMovieById(movieId.value),
+    enabled: computed(() => !!movieId.value),
   });
 };

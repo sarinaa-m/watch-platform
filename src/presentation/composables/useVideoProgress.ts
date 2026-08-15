@@ -1,7 +1,7 @@
 import { computed, toValue, type MaybeRefOrGetter } from 'vue';
 import { useContinueWatchingQuery } from '@application/usecases/watchProgressUseCases';
 
-export function useVideoProgress(id: MaybeRefOrGetter<number>) {
+export function useVideoProgress(id: MaybeRefOrGetter<number | string>) {
   const { data: continueWatching } = useContinueWatchingQuery();
   return computed(() => {
     const videoId = toValue(id);
