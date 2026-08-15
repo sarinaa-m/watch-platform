@@ -6,6 +6,5 @@ export function useHealthQuery() {
   return useQuery({
     queryKey: healthKeys.status(),
     queryFn: () => healthRepository.getHealth(),
-    refetchOnWindowFocus: false,
   });
 }

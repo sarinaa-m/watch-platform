@@ -31,11 +31,7 @@ export function useSyncProgressMutation() {
       if (!identifier) return;
       queryClient.setQueryData<ContinueWatchingResponse>(
         watchProgressKeys.continueWatching(identifier),
-        (old) => {
-          if (!old) return old;
-
-          return { ...old, data: [entry] };
-        }
+        (old) => (old ? { ...old, data: [entry] } : { data: [entry], total: 1 })
       );
     },
     retry: false,
