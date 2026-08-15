@@ -3,15 +3,17 @@ import { useRouter } from 'vue-router';
 import VideoPlayer from '@presentation/components/VideoPlayer.vue';
 import WatchPageSkeleton from '@presentation/components/skeletons/WatchPageSkeleton.vue';
 import { useWatchPlayer } from '@presentation/composables/useWatchPlayer';
+import { useTextDirection } from '@presentation/composables/useTextDirection';
 import { formatTime } from '@shared/utils/formatTime';
 import { getApiErrorMessageKey } from '@shared/api/apiError';
-import { Pause, Play, RotateCcw, RotateCw } from 'lucide-vue-next';
+import { MoveLeft, MoveRight, Pause, Play, RotateCcw, RotateCw } from 'lucide-vue-next';
 
 const props = defineProps<{
   id: string | number;
 }>();
 
 const router = useRouter();
+const { isRtl } = useTextDirection();
 
 const {
   playerRef,
@@ -60,7 +62,7 @@ const {
           tabindex="0"
           @click="router.push({ name: 'title', params: { id: props.id } })"
         >
-          → {{ $t('common.back') }}
+          <component :is="isRtl ? MoveRight : MoveLeft" :size="16" /> {{ $t('common.back') }}
         </button>
         <div class="titles">
           <div class="title">{{ movie.title }}</div>
@@ -162,6 +164,9 @@ const {
   cursor: pointer;
   backdrop-filter: blur(8px);
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .back-btn:hover,
