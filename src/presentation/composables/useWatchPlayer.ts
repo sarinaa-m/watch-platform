@@ -122,11 +122,11 @@ export function useWatchPlayer(id: MaybeRefOrGetter<string | number>) {
   });
 
   watch(
-    movie,
-    (loaded) => {
+    [videoId, () => !!movie.value],
+    ([, hasMovie], previous) => {
+      if (previous && previous[0] !== videoId.value) lastKnownPosition = 0;
       stopSync();
-      lastKnownPosition = 0;
-      if (loaded) scheduleSync();
+      if (hasMovie) scheduleSync();
     },
     { immediate: true }
   );

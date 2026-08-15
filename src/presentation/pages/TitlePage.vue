@@ -4,14 +4,17 @@ import { useRouter } from 'vue-router';
 import { useMovieItem } from '@application/usecases/movieUseCases';
 import { usePlaybackStatusLabels } from '@presentation/composables/usePlaybackStatusLabels';
 import { useVideoProgress } from '@presentation/composables/useVideoProgress';
+import { useTextDirection } from '@presentation/composables/useTextDirection';
 import MediaBackdrop from '@presentation/components/MediaBackdrop.vue';
 import ProgressBar from '@presentation/components/ProgressBar.vue';
 import QueryState from '@presentation/components/QueryState.vue';
 import TitlePageSkeleton from '@presentation/components/skeletons/TitlePageSkeleton.vue';
+import { MoveLeft, MoveRight } from 'lucide-vue-next';
 
 const props = defineProps<{ id: string | number }>();
 
 const router = useRouter();
+const { isRtl } = useTextDirection();
 const progress = useVideoProgress(() => Number(props.id));
 const progressPercent = computed(() => progress.value.progressPercent);
 const completed = computed(() => progress.value.completed);
@@ -27,7 +30,7 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
 <template>
   <div class="title-page">
     <button class="focusable back-btn" tabindex="0" @click="router.push({ name: 'home' })">
-      → {{ $t('common.back') }}
+      <component :is="isRtl ? MoveRight : MoveLeft" :size="16" /> {{ $t('common.back') }}
     </button>
 
     <QueryState :pending="isPending" :error="error">
@@ -79,6 +82,9 @@ const { data: movie, isPending, error } = useMovieItem(() => Number(props.id));
   padding: 8px 16px;
   border-radius: 999px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
 }
 
 .back-btn:hover,
